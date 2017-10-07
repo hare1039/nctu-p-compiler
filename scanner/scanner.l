@@ -44,10 +44,7 @@ int main(int argc, char *argv[])
 
 	yyin = fp;
 
-	ttlex();
-
-	close(fp);
-	fp = NULL;
+    yylex();
 	
 	return 0;
 }
