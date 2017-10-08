@@ -1,50 +1,110 @@
+%option c++ noyywrap
 %{
+#if __cplusplus < 201103L
+    #error("Please compile using -std=c++11 or higher")
+#endif
 
-#define LIST                strcat(buf, yytext)
-#define token(t)            {LIST; if (Opt_T) printf("<%s>\n", #t);}
-#define token_char(t)       {LIST; if (Opt_T) printf("<%c>\n", (t));}
-#define token_integer(t, i) {LIST; if (Opt_T) printf("<%s: %d>\n", #t, (i));}
-#define token_string(t, s)  {LIST; if (Opt_T) printf("<%s: %s>\n", #t, (s));}
-#define MAX_LINE_LENG       256
+#include <memory>
+#include <regex>
+#include <fstream>
+using std::printf;
+using std::strcat;
 
-int Opt_S = 1;
-int Opt_T = 1;
-int linenum = 1;
+#define LIST               strcat(buf, YYText())
+#define token(t)           {LIST; if (Opt_T) printf("<%s>\n", #t);}
+#define tokenIm(t)         {LIST; if (Opt_T) printf("<%s>\n", t);}
+#define tokenChar(t)       {LIST; if (Opt_T) printf("<%c>\n", (t));}
+#define tokenInteger(t, i) {LIST; if (Opt_T) printf("<%s: %d>\n", #t, (i));}
+#define tokenString(t, s)  {LIST; if (Opt_T) printf("<%s: %s>\n", #t, (s));}
+#define MAX_LINE_LENG      8096
+
+int  Opt_S = 1;
+int  Opt_T = 1;
+int  linenum = 1;
 char buf[MAX_LINE_LENG];
 
 %}
 
+keyword      array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
+token_char   [(|)|,|:|;]
+ignore_char  "\t"|" "
+arith_string "+"|"-"|"*"|"/"|"mod"|":="|"<"|"<="|"<>"|">="|">"|"="|"and"|"or"|"not"
+
+												
+form_string \".*\"
+						
+letter      [a-zA-Z]
+digit       [0-9]
+
+number      {digit}*
+float       {digit}*\.{digit}+
+sci_num     {float}[eE][+-]?{number}
+																		
 %%
 
-"(" { token_char('('); }
-\n	{
-         LIST;
-         if (Opt_S)
-	         printf("%d: %s\n", linenum, buf);
-         linenum++;
-         buf[0] = '\0';
-    }
+"//".*   { LIST; }
+
+{token_char} { tokenChar(YYText()[0]); }
+{keyword}    {
+                 tokenIm((std::string("KW") + YYText()).c_str());
+             }
+
+{number} {
+             if(YYText()[0] == '0')
+			 {
+                 tokenString(oct_integer, YYText());
+             }
+             else
+			 {
+                 tokenString(integer, YYText());
+             }
+         }
+{float}  { tokenString(float, YYText()); }
+
+{sci_num} { tokenString(scientific, YYText()); }
+
+{form_string} {
+                  std::string s(YYText());
+                  s = s.substr(1, YYLeng() - 2);
+                  if (true)
+  				  {
+                      tokenString(string, s.c_str());
+                      
+                  }
+                  else
+  			      {
+
+  			      }                                   
+              }
+
+{arith_string} { tokenIm(YYText());}
+
+{ignore_char} {LIST;}
+
+{letter}({letter}|{digit})* { tokenString(id, YYText()); }
+
+\n	         {
+                  LIST;
+                  if (Opt_S)
+	                  printf("%d: %s", linenum, buf);
+                  linenum++;
+                  strcpy(buf, "");
+             }
 
 %%
 
-int main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
-	if (argc != 2)
+   	if (argc != 2)
 	{
-		fprintf(stderr, "Missing argument: [file]\n");
+		std::cerr << "Missing argument: [file]\n";	   
 		exit(1);
 	}
+	std::ifstream input(argv[1]);
+    std::unique_ptr<FlexLexer> lexer(new yyFlexLexer(input, std::cout));
 
-	FILE *fp = fopen(argv[1], "r");
-	if (! fp)
-	{
-		fprintf(stderr, "File can't open. Abort.\n");
-		exit(1);
-	}
-
-	yyin = fp;
-
-    yylex();
-	
-	return 0;
+    while( lexer->yylex() != 0 );
+    return 0;
 }
+
+	
