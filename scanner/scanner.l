@@ -10,16 +10,18 @@
 using std::printf;
 using std::strcat;
 
+
+
 #define LIST               strcat(buf, YYText())
-#define token(t)           {LIST; if (Opt_T) printf("<%s>\n", #t);}
-#define tokenIm(t)         {LIST; if (Opt_T) printf("<%s>\n", t);}
-#define tokenChar(t)       {LIST; if (Opt_T) printf("<%c>\n", (t));}
-#define tokenInteger(t, i) {LIST; if (Opt_T) printf("<%s: %d>\n", #t, (i));}
-#define tokenString(t, s)  {LIST; if (Opt_T) printf("<%s: %s>\n", #t, (s));}
+#define token(t)           {LIST; if (display_on) printf("<%s>\n", #t);}
+#define tokenIm(t)         {LIST; if (display_on) printf("<%s>\n", t);}
+#define tokenChar(t)       {LIST; if (display_on) printf("<%c>\n", (t));}
+#define tokenInteger(t, i) {LIST; if (display_on) printf("<%s: %d>\n", #t, (i));}
+#define tokenString(t, s)  {LIST; if (display_on) printf("<%s: %s>\n", #t, (s));}
 #define MAX_LINE_LENG      8096
 
 int  Opt_S = 1;
-int  Opt_T = 1;
+bool display_on = true;
 int  linenum = 1;
 char buf[MAX_LINE_LENG];
 
@@ -39,10 +41,20 @@ digit       [0-9]
 number      {digit}*
 float       {digit}*\.{digit}+
 sci_num     {float}[eE][+-]?{number}
-																		
+
+%x C_COMMENT
+																								
 %%
 
 "//".*   { LIST; }
+
+"/*"     { BEGIN(C_COMMENT);}
+
+<C_COMMENT>[^*\n]*      { /* eat */ }
+<C_COMMENT>"*"+[^*/\n]* { /* eat */ }
+<C_COMMENT>\n           { ++linenum; }
+<C_COMMENT>"*/"         { BEGIN(INITIAL); }
+
 
 {token_char} { tokenChar(YYText()[0]); }
 {keyword}    {
@@ -86,7 +98,7 @@ sci_num     {float}[eE][+-]?{number}
 \n	         {
                   LIST;
                   if (Opt_S)
-	                  printf("%d: %s", linenum, buf);
+	                  printf("%3d: %s", linenum, buf);
                   linenum++;
                   strcpy(buf, "");
              }
