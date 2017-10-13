@@ -17,7 +17,6 @@ using std::strcat;
 #define tokenInteger(t, i) {LIST; if (Opt_T) printf("<%s: %d>\n", #t, (i));}
 #define tokenString(t, s)  {LIST; if (Opt_T) printf("<%s: %s>\n", #t, (s));}
 #define LINE_END           {\
-                                LIST;\
                                 if (Opt_S)\
                                     printf("%3d: %s", linenum, buf);\
                                 linenum++;\
@@ -29,6 +28,7 @@ bool Opt_S = true;
 bool Opt_T = true;
 int  linenum = 1;
 char buf[MAX_LINE_LENG];
+std::string string_buf;
 
 %}
 
@@ -36,7 +36,6 @@ keyword      array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|r
 token_char   [(|)|,|:|;]
 ignore_char  "\t"|" "
 arith_string "+"|"-"|"*"|"/"|"mod"|":="|"<"|"<="|"<>"|">="|">"|"="|"and"|"or"|"not"
-
 												
 form_string \".*\"
 						
@@ -46,18 +45,21 @@ digit       [0-9]
 number      {digit}*
 float       {digit}*\.{digit}+
 sci_num     {float}[eE][+-]?{number}
-
+						
 %x C_COMMENT
-%x CPP_COMMENT																														
+%x CPP_COMMENT
+%x STR
+
+												
 %%
 
 <CPP_COMMENT>&S+    { LIST; Opt_S = true; }
 <CPP_COMMENT>&S-    { LIST; Opt_S = false;}
 <CPP_COMMENT>&T+    { LIST; Opt_T = true; }
 <CPP_COMMENT>&T-    { LIST; Opt_T = false;}
-<CPP_COMMENT>"\n"   { LINE_END; BEGIN(INITIAL); }
+<CPP_COMMENT>"\n"   { LIST; LINE_END; BEGIN(INITIAL); }
 <CPP_COMMENT>.      { LIST; }
-"//"   { LIST; BEGIN(CPP_COMMENT);}
+"//"     { LIST; BEGIN(CPP_COMMENT);}
 
 "/*"     { BEGIN(C_COMMENT);}
 
@@ -86,27 +88,19 @@ sci_num     {float}[eE][+-]?{number}
 
 {sci_num} { tokenString(scientific, YYText()); }
 
-{form_string} {
-                  std::string s(YYText());
-                  s = s.substr(1, YYLeng() - 2);
-                  if (true)
-  				  {
-                      tokenString(string, s.c_str());
-                      
-                  }
-                  else
-  			      {
-
-  			      }                                   
-              }
-
+{form_string}      {
+                       std::regex e("\"\"");
+                       string_buf = std::regex_replace(std::string(YYText(), 1, YYLeng() - 2), e, "\"");
+                       tokenString(string, string_buf.c_str());
+                   }
+				
 {arith_string} { tokenIm(YYText());}
 
 {ignore_char} {LIST;}
 
 {letter}({letter}|{digit})* { tokenString(id, YYText()); }
 
-\n	         {LINE_END;}
+\n	         { LIST; LINE_END;}
 
 %%
 
