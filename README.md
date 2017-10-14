@@ -11,6 +11,16 @@ make
 ```
 Binaries will generate in `./bin/`
 
-# Platform: 
+# Platform & dependency:
+- dependency
+  - cmake
+  - make
+  - flex
+- Platform
+  - Linux
+  - FreeBSD
+  - macOS # please use brewed-flex
 
-# What can it do?
+# Usage
+
+`./bin/scanner [file]`
