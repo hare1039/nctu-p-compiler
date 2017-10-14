@@ -44,7 +44,7 @@ digit       [0-9]
 
 number      {digit}*
 float       {digit}*\.{digit}+
-sci_num     {float}[eE][+-]?{number}
+sci_num     {float}|{number}[eE][+-]?{number}
 						
 %x C_COMMENT
 %x CPP_COMMENT
