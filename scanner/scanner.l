@@ -104,14 +104,6 @@ sci_num     {float}|{number}[eE][+-]?{number}
 
 %%
 
-//                  LIST;
-//                  if (Opt_S)
-//	                  printf("%3d: %s", linenum, buf);
-//                  linenum++;
-//                  strcpy(buf, "");
-
-
-
 
 int main( int argc, char *argv[] )
 {
@@ -121,7 +113,7 @@ int main( int argc, char *argv[] )
 		exit(1);
 	}
 	std::ifstream input(argv[1]);
-    std::unique_ptr<FlexLexer> lexer(new yyFlexLexer(input, std::cout));
+    std::unique_ptr<FlexLexer> lexer(new yyFlexLexer(&input, &std::cout));
 
     while( lexer->yylex() != 0 );
     return 0;
