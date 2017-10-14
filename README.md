@@ -8,6 +8,7 @@ cd .../0413220-p-compiler
 mkdir build
 cd build
 cmake ..
+make
 ```
 
-Binaries will generate in ./bin/
+Binaries will generate in `./bin/`
