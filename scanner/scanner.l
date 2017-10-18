@@ -47,19 +47,16 @@ float       {digit}*\.{digit}+
 sci_num     {float}|{number}[eE][+-]?{number}
 						
 %x C_COMMENT
-%x CPP_COMMENT
 %x STR
 
 												
 %%
 
-<CPP_COMMENT>&S+    { LIST; Opt_S = true; }
-<CPP_COMMENT>&S-    { LIST; Opt_S = false;}
-<CPP_COMMENT>&T+    { LIST; Opt_T = true; }
-<CPP_COMMENT>&T-    { LIST; Opt_T = false;}
-<CPP_COMMENT>"\n"   { LIST; LINE_END; BEGIN(INITIAL); }
-<CPP_COMMENT>.      { LIST; }
-"//"     { LIST; BEGIN(CPP_COMMENT);}
+"//&S+".*    { LIST; Opt_S = true; }
+"//&S-".*    { LIST; Opt_S = false;}
+"//&T+".*    { LIST; Opt_T = true; }
+"//&T-".*    { LIST; Opt_T = false;}
+"//".*    { LIST; }
 
 "/*"     { BEGIN(C_COMMENT);}
 

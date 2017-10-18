@@ -1,3 +1,4 @@
+//&S-&T-
 begin
   var a : integer;
   var b : real;
@@ -7,4 +8,7 @@ begin
   if a > 01 then
     b := b*123E4;
   end if
+end
+//&T+
+
 end
