@@ -102,6 +102,7 @@ sci_num     {float}|{number}[eE][+-]?{number}
 
 \n	         { LIST; LINE_END;}
 
+.            { LIST; printf("error at line %d: bad character '%s'\n", linenum, YYText()); }
 %%
 
 
