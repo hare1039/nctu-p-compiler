@@ -1,6 +1,6 @@
 # NCTU 0413220 hw1-report 
 A small p-language compiler
-    hw1-scanner
+  - hw1-scanner
 
 # Platform & dependency:
 - dependency
@@ -13,7 +13,7 @@ A small p-language compiler
   - macOS   # please use brewed-flex
 
 
-if you get an error like `member reference type 'std::istream *' (aka 'basic_istream<char> *') is a pointer; maybe you meant to use '->'? `, please make sure the version of `FlexLexer.h` are sync with `flex --version`.
+If you get an error like `member reference type 'std::istream *' (aka 'basic_istream<char> *') is a pointer; maybe you meant to use '->'? `, please make sure the version of `FlexLexer.h` are synced with `flex --version`.
 Flex 2.6.0 changed the storage definition of yyin storage for C++ scanners for both the header and the generated source. 
 
 # compile
