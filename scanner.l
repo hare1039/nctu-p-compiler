@@ -1,4 +1,3 @@
-%option c++ noyywrap
 %{
 #if __cplusplus < 201103L
     #error("Please compile using -std=c++11 or higher")
@@ -7,20 +6,19 @@
 #include <memory>
 #include <regex>
 #include <fstream>
-using std::printf;
-using std::strcat;
+#include <iostream>
 
-#define LIST               strcat(buf, YYText())
-#define token(t)           {LIST; if (Opt_T) printf("<%s>\n", #t);}
-#define tokenIm(t)         {LIST; if (Opt_T) printf("<%s>\n", t);}
-#define tokenChar(t)       {LIST; if (Opt_T) printf("<%c>\n", (t));}
-#define tokenInteger(t, i) {LIST; if (Opt_T) printf("<%s: %d>\n", #t, (i));}
-#define tokenString(t, s)  {LIST; if (Opt_T) printf("<%s: %s>\n", #t, (s));}
+#define LIST               std::strcat(buf, yytext)
+#define token(t)           {LIST; if (Opt_T) std::printf("<%s>\n", #t);}
+#define tokenIm(t)         {LIST; if (Opt_T) std::printf("<%s>\n", t);}
+#define tokenChar(t)       {LIST; if (Opt_T) std::printf("<%c>\n", (t));}
+#define tokenInteger(t, i) {LIST; if (Opt_T) std::printf("<%s: %d>\n", #t, (i));}
+#define tokenString(t, s)  {LIST; if (Opt_T) std::printf("<%s: %s>\n", #t, (s));}
 #define LINE_END           {\
                                 if (Opt_S)\
-                                    printf("%3d: %s", linenum, buf);\
+                                    std::printf("%3d: %s", linenum, buf);\
                                 linenum++;\
-                                strcpy(buf, "");\
+                                std::strcpy(buf, "");\
 	                       }
 #define MAX_LINE_LENG      8096
 
@@ -29,7 +27,6 @@ bool Opt_T = true;
 int  linenum = 1;
 char buf[MAX_LINE_LENG];
 std::string string_buf;
-
 %}
 
 keyword      array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
@@ -66,40 +63,40 @@ sci_num     {float}|{number}[eE][+-]?{number}
 <C_COMMENT>"*/"         { BEGIN(INITIAL); }
 
 
-{token_char} { tokenChar(YYText()[0]); }
+{token_char} { tokenChar(yytext[0]); }
 {keyword}    {
-                 tokenIm((std::string("KW") + YYText()).c_str());
+                 tokenIm((std::string("KW") + std::string(yytext)).c_str());
              }
 
 {number} {
-             if(YYText()[0] == '0')
+             if(yytext[0] == '0')
 			 {
-                 tokenString(oct_integer, YYText());
+                 tokenString(oct_integer, yytext);
              }
              else
 			 {
-                 tokenString(integer, YYText());
+                 tokenString(integer, yytext);
              }
          }
-{float}  { tokenString(float, YYText()); }
+{float}  { tokenString(float, yytext); }
 
-{sci_num} { tokenString(scientific, YYText()); }
+{sci_num} { tokenString(scientific, yytext); }
 
 {form_string}      {
                        std::regex e("\"\"");
-                       string_buf = std::regex_replace(std::string(YYText(), 1, YYLeng() - 2), e, "\"");
+                       string_buf = std::regex_replace(std::string(std::string(yytext), 1, yyleng - 2), e, "\"");
                        tokenString(string, string_buf.c_str());
                    }
 				
-{arith_string} { tokenIm(YYText());}
+{arith_string} { tokenIm(yytext);}
 
 {ignore_char} {LIST;}
 
-{letter}({letter}|{digit})* { tokenString(id, YYText()); }
+{letter}({letter}|{digit})* { tokenString(id, yytext); }
 
 \n	         { LIST; LINE_END;}
 
-.            { LIST; printf("error at line %d: bad character '%s'\n", linenum, YYText()); }
+.            { LIST; std::printf("error at line %d: bad character '%s'\n", linenum, yytext); }
 %%
 
 
@@ -110,10 +107,16 @@ int main( int argc, char *argv[] )
 		std::cerr << "Missing argument: [file]\n";	   
 		exit(1);
 	}
-	std::ifstream input(argv[1]);
-    std::unique_ptr<FlexLexer> lexer(new yyFlexLexer(&input, &std::cout));
-
-    while( lexer->yylex() != 0 );
+	FILE *fp = std::fopen(argv[1], "r");
+	
+	if(fp == NULL){
+		std::cout << "Open file error\n";
+		std::exit(1);
+	}
+	
+	yyin = fp;
+	yylex();
+	std::fclose(fp);
     return 0;
 }
 
