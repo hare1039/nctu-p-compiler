@@ -1,6 +1,7 @@
 # NCTU 0413220 hw1-report 
 A small p-language compiler
     hw1-scanner
+	hw2-parser
 
 # Platform & dependency:
 - dependency
@@ -17,18 +18,18 @@ if you get an error like `member reference type 'std::istream *' (aka 'basic_ist
 Flex 2.6.0 changed the storage definition of yyin storage for C++ scanners for both the header and the generated source. 
 
 # compile
+This branch only use default `make` build system, as to lower the barrier for automation.
+
+If you need a cross platform build system, please use `cmake` branch
 ```
 cd 0413220-p-compiler
-mkdir build
-cd build
-cmake ..
 make
 ```
-Binaries will generate in `./bin/`
+Binaries will generate as `parser`
 
 # Usage
 
-`./bin/scanner [file]`
+`./parser [file]`
 
 # Ability
 
