@@ -1,8 +1,5 @@
 %{
-#if __cplusplus < 201103L
-    #error("Please compile using -std=c++11 or higher")
-#endif
-
+#include "parse.tab.hpp"
 #include <memory>
 #include <regex>
 #include <fstream>
@@ -98,26 +95,5 @@ sci_num     {float}|{number}[eE][+-]?{number}
 
 .            { LIST; std::printf("error at line %d: bad character '%s'\n", linenum, yytext); }
 %%
-
-
-int main( int argc, char *argv[] )
-{
-   	if (argc != 2)
-	{
-		std::cerr << "Missing argument: [file]\n";	   
-		exit(1);
-	}
-	FILE *fp = std::fopen(argv[1], "r");
-	
-	if(fp == NULL){
-		std::cout << "Open file error\n";
-		std::exit(1);
-	}
-	
-	yyin = fp;
-	yylex();
-	std::fclose(fp);
-    return 0;
-}
 
 	

@@ -1,0 +1,58 @@
+
+%{
+#include <iostream>
+
+extern int   linenum;            /* custom declared */
+extern FILE *yyin;               /* declared by lex */
+extern char *yytext;             /* declared by lex */
+extern char  buf[MAX_LINE_LENG]; /* custom declared */
+%}
+
+%token SEMICOLON END IDENT
+
+%%
+
+program	: programname SEMICOLON programbody END IDENT
+		;
+
+programname	: IDENT
+		;
+
+programbody : IDENT 
+        ;
+%%
+
+int yyerror( char *msg )
+{
+    std::cout << "\n|--------------------------------------------------------------------------\n"
+	             "| Error found in Line #" << linenum << ": " << buf << "\n"
+                 "|\n"
+                 "| Unmatched token: " << yytext << "\n"
+                 "|--------------------------------------------------------------------------\n";
+    std::exit(1);
+}
+
+int main( int argc, char *argv[] )
+{
+    if (argc != 2)
+	{
+		std::cerr << "Missing argument: [file]\n";	   
+		std::exit(1);
+	}
+	FILE *fp = std::fopen(argv[1], "r");
+	
+	if (fp == NULL)
+	{
+		std::cout << "Open file error\n";
+		std::exit(1);
+	}
+	
+	yyin = fp;
+	yyparse();
+	std::fclose(fp);
+
+  	std::cout << "\n"
+  	"|--------------------------------|\n"
+  	"|  There is no syntactic error!  |\n"
+  	"|--------------------------------|\n";
+}
