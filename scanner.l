@@ -17,12 +17,11 @@
                                 linenum++;\
                                 std::strcpy(buf, "");\
 	                       }
-#define MAX_LINE_LENG      8096
 
 bool Opt_S = true;
 bool Opt_T = true;
 int  linenum = 1;
-char buf[MAX_LINE_LENG];
+char buf[8096];
 std::string string_buf;
 %}
 

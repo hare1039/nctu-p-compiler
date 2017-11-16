@@ -4,14 +4,14 @@ CXX      = clang++
 CXXFLAGS = -std=c++14 -Wno-deprecated-register
 LEX      = flex
 YACC     = bison
-LIB      = -ll -ly
+LIB      = -lfl -ly
 OS       = $(shell uname)
 
 
 all: $(TARGET)
 
-$(TARGET): lex.yy.cc
-	$(CXX) $(CXXFLAGS) $(LIB) parse.tab.cpp $< -o $(TARGET)
+$(TARGET): lex.yy.cc parse.tab.cpp
+	$(CXX) $(CXXFLAGS) $(LIB) $< -o $(TARGET)
 
 parse.tab.hpp: parse.ypp
 	$(YACC) -d $<

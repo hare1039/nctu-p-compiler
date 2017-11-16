@@ -1,11 +1,16 @@
 
 %{
 #include <iostream>
-
-extern int   linenum;            /* custom declared */
-extern FILE *yyin;               /* declared by lex */
-extern char *yytext;             /* declared by lex */
-extern char  buf[MAX_LINE_LENG]; /* custom declared */
+#include <cstdio>
+extern "C"
+{
+    extern int   yylex(void);
+    extern int   linenum;       /* custom declared */
+    extern FILE *yyin;          /* declared by lex */
+    extern char *yytext;        /* declared by lex */
+    extern char  buf[8096];     /* custom declared */
+    int yyerror( char *msg );
+}
 %}
 
 %token SEMICOLON END IDENT
