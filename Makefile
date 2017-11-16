@@ -1,25 +1,18 @@
-TARGET   = parser
-OBJECT   = lex.yy.cc parse.tab.hpp parse.tab.cpp
-CXX      = clang++
-CXXFLAGS = -std=c++14 -Wno-deprecated-register
-LEX      = flex
-YACC     = bison
-LIB      = -lfl -ly
-OS       = $(shell uname)
+TARGET = parser
+OBJECT = lex.yy.c y.tab.h y.tab.c
+CC = clang -g
+LEX = flex
+LIBS = -lfl -ly
+YACC = yacc -d -v
 
+all: lex.yy.c y.tab.c
+	$(CC) lex.yy.c y.tab.c -o $(TARGET) $(LIBS)
 
-all: $(TARGET)
+y.tab.c: parser.y
+	$(YACC) parser.y
 
-$(TARGET): lex.yy.cc parse.tab.cpp
-	$(CXX) $(CXXFLAGS) $(LIB) $< -o $(TARGET)
-
-parse.tab.hpp: parse.ypp
-	$(YACC) -d $<
-
-lex.yy.cc: scanner.l parse.tab.hpp
-	$(LEX) -o lex.yy.cc $<
-
-.PHONY: clean
+lex.yy.c: lex.l
+	$(LEX) lex.l
 
 clean:
-	$(RM) -f $(TARGET) $(OBJECT)
+	rm -f $(TARGET) $(OBJECT)
