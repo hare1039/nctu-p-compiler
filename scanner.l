@@ -1,11 +1,14 @@
+%option c++ noyywrap
 %{
-#include "parse.tab.hpp"
+
+#include <cstdio>
 #include <memory>
 #include <regex>
 #include <fstream>
-#include <iostream>
+#include "parse.tab.cpp"
 
-#define LIST               std::strcat(buf, yytext)
+
+#define LIST               std::strcat(buf, YYText())
 #define token(t)           {LIST; if (Opt_T) std::printf("<%s>\n", #t);}
 #define tokenIm(t)         {LIST; if (Opt_T) std::printf("<%s>\n", t);}
 #define tokenChar(t)       {LIST; if (Opt_T) std::printf("<%c>\n", (t));}
@@ -15,14 +18,16 @@
                                 if (Opt_S)\
                                     std::printf("%3d: %s", linenum, buf);\
                                 linenum++;\
-                                std::strcpy(buf, "");\
+                                strcpy(buf, "");\
 	                       }
+#define MAX_LINE_LENG      8096
 
 bool Opt_S = true;
 bool Opt_T = true;
 int  linenum = 1;
-char buf[8096];
+char buf[MAX_LINE_LENG];
 std::string string_buf;
+
 %}
 
 keyword      array|begin|boolean|def|do|else|end|false|for|integer|if|of|print|read|real|string|then|to|true|return|var|while
@@ -59,40 +64,54 @@ sci_num     {float}|{number}[eE][+-]?{number}
 <C_COMMENT>"*/"         { BEGIN(INITIAL); }
 
 
-{token_char} { tokenChar(yytext[0]); }
+{token_char} { tokenChar(YYText()[0]); }
 {keyword}    {
-                 tokenIm((std::string("KW") + std::string(yytext)).c_str());
+                 tokenIm((std::string("KW") + YYText()).c_str());
              }
 
 {number} {
-             if(yytext[0] == '0')
+             if(YYText()[0] == '0')
 			 {
-                 tokenString(oct_integer, yytext);
+                 tokenString(oct_integer, YYText());
              }
              else
 			 {
-                 tokenString(integer, yytext);
+                 tokenString(integer, YYText());
              }
          }
-{float}  { tokenString(float, yytext); }
+{float}  { tokenString(float, YYText()); }
 
-{sci_num} { tokenString(scientific, yytext); }
+{sci_num} { tokenString(scientific, YYText()); }
 
 {form_string}      {
                        std::regex e("\"\"");
-                       string_buf = std::regex_replace(std::string(std::string(yytext), 1, yyleng - 2), e, "\"");
+                       string_buf = std::regex_replace(std::string(YYText(), 1, YYLeng() - 2), e, "\"");
                        tokenString(string, string_buf.c_str());
                    }
 				
-{arith_string} { tokenIm(yytext);}
+{arith_string} { tokenIm(YYText());}
 
 {ignore_char} {LIST;}
 
-{letter}({letter}|{digit})* { tokenString(id, yytext); }
+{letter}({letter}|{digit})* { tokenString(id, YYText()); }
 
 \n	         { LIST; LINE_END;}
 
-.            { LIST; std::printf("error at line %d: bad character '%s'\n", linenum, yytext); }
+.            { LIST; std::printf("error at line %d: bad character '%s'\n", linenum, YYText()); }
 %%
 
-	
+			 /*
+int main( int argc, char *argv[] )
+{
+   	if (argc != 2)
+	{
+		std::cerr << "Missing argument: [file]\n";	   
+		exit(1);
+	}
+	std::ifstream input(argv[1]);
+    std::unique_ptr<FlexLexer> lexer(new yyFlexLexer(&input, &std::cout));
+
+    while( lexer->yylex() != 0 );
+    return 0;
+}
+			 */
