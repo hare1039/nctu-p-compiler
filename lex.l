@@ -9,24 +9,25 @@
 
 
 #define LIST strcat( buf, yytext )
-#define token(t) { LIST; if (Opt_T) printf("<%s>\n", #t );}
-#define tokenChar(t) { LIST; if (Opt_T) printf("<%c>\n", t );}
-#define tokenInteger(t, i) { LIST; if (Opt_T) printf("<%s: %d>\n", t, i); }
-#define tokenOctInteger(t, i) { LIST; if (Opt_T) printf("<%s: %s>\n", t, i); }
-#define tokenFloat(t, i) { LIST; if (Opt_T) printf("<%s: %s>\n", t, i ); }
-#define tokenScientific(t, s) { LIST; if ( Opt_T ) printf("<%s: %s>\n", t, s); }
-#define tokenString(t, s) { LIST; if (Opt_T) printf("<%s: %s>\n", t, s); }
+#define token(t)				{ LIST; if (Opt_T) printf("<%s>\n", #t );}
+#define tokenChar(t)			{ LIST; if (Opt_T) printf("<%c>\n", t  );}
+#define tokenInteger(t, i)		{ LIST; if (Opt_T) printf("<%s: %d>\n", t, i); }
+#define tokenOctInteger(t, i)	{ LIST; if (Opt_T) printf("<%s: %s>\n", t, i); }
+#define tokenFloat(t, i)		{ LIST; if (Opt_T) printf("<%s: %s>\n", t, i); }
+#define tokenScientific(t, s)	{ LIST; if (Opt_T) printf("<%s: %s>\n", t, s); }
+#define tokenString(t, s)		{ LIST; if (Opt_T) printf("<%s: %s>\n", t, s); }
 
 
-#define  MAX_LINE_LENG  256
+#define MAX_LINE_LENG 8192
 
-int Opt_S = 1;				/* list source code option */
-int Opt_T = 1;				/* list token option */
-int linenum = 1;			/* line number */
-char buf[MAX_LINE_LENG];		/* source code line buffer */
-char strContent[MAX_LINE_LENG];		/* string buffer */
+int  Opt_S   = 1;				  /* list source code option */
+int  Opt_T   = 1;				  /* list token option */
+int  linenum = 1;    			  /* line number */
+char buf[MAX_LINE_LENG];		  /* source code line buffer */
+char str_content[MAX_LINE_LENG];  /* string buffer */
 
-void setPseudoComment( const char * );	/* pseudo comment option switch */
+int  yylex(void);
+void set_pseudo_comment( const char * );	/* pseudo comment option switch */
 %}
 
 whitespace [ \t]+
@@ -44,62 +45,60 @@ identifier ({letter})({letter}|{digit})*
 %x COMMENT
 %x COMMENT_CPP
 
-
-
 %%
 
-","				{ tokenChar(','); return ',';}
-";"				{ tokenChar(';'); return ';';}
-":"				{ tokenChar(':'); return ':';}
-")"				{ tokenChar(')'); return ')';}
-"("				{ tokenChar('('); return '(';}
-"["				{ tokenChar('['); return '[';}
-"]"				{ tokenChar(']'); return ']';}
+","			 { tokenChar(',');  return ',';}
+";"			 { tokenChar(';');  return ';';}
+":"			 { tokenChar(':');  return ':';}
+")"			 { tokenChar(')');  return ')';}
+"("			 { tokenChar('(');  return '(';}
+"["			 { tokenChar('[');  return '[';}
+"]"			 { tokenChar(']');  return ']';}
+			 
+"+"			 { tokenChar('+');	return '+';}
+"-"			 { tokenChar('-');	return '-';}
+"*"			 { tokenChar('*');	return '*';}
+"/"			 { tokenChar('/');	return '/';}
+"mod"		 { token(mod);		return MOD;}
+":="		 { token(:=);		return ASSIGN;}
+"<"			 { tokenChar('<');	return '<'; }
+"<="		 { token(<=);		return LE; }
+"<>"		 { token(<>);		return NE;}
+">="		 { token(>=);		return GE;}
+">"			 { tokenChar('>');	return '>';}
+"="			 { tokenChar('=');	return '=';}
+"and"		 { token(and);		return AND;}
+"or"		 { token(or);		return OR;}
+"not"		 { token(not);		return NOT;}
+			 
+"array"		 { token(KWarray);	return ARRAY;}
+"begin"		 { token(KWbegin);	return BG;}
+"boolean"	 { token(KWboolean); return TYPE;}
+"def"		 { token(KWdef);}
+"do"		 { token(KWdo);		return DO;}
+"else"		 { token(KWelse);	return ELSE;}
+"end"		 { token(KWend);	return END;}
+"false"		 { token(KWfalse);	return FALSE;}
+"for"		 { token(KWfor);	return FOR;}
+"integer"	 { token(KWinteger);return TYPE;}
+"if"		 { token(KWif);		return IF;}
+"of"		 { token(KWof);		return OF;}
+"print"		 { token(KWprint);	return PRINT;}
+"read"		 { token(KWread);	return READ;}
+"real"		 { token(KWreal);	return TYPE;}
+"string"	 { token(KWstring);	return TYPE;}
+"then"		 { token(KWthen);	return THEN;}
+"to"		 { token(KWto);		return TO;}
+"true"		 { token(KWtrue);	return TRUE;}
+"return"	 { token(KWreturn); return RETURN;}
+"var"		 { token(KWvar);	return VAR;}
+"while"		 { token(KWwhile);	return WHILE;}
 
-"+"				{ tokenChar('+'); return '+';}
-"-"				{ tokenChar('-'); return '-';}
-"*"				{ tokenChar('*'); return '*';}
-"/"				{ tokenChar('/'); return '/';}
-"mod"				{ token(mod); return MOD;}
-":="				{ token(:=); return ASSIGN;}
-"<"				{ tokenChar('<'); return '<'; }
-"<="				{ token(<=); return LE; }
-"<>"				{ token(<>); return NE;}
-">="				{ token(>=); return GE;}
-">"				{ tokenChar('>'); return '>';}
-"="				{ tokenChar('='); return '=';}
-"and"				{ token(and); return AND;}
-"or"				{ token(or); return OR;}
-"not"				{ token(not); return NOT;}
-
-"array"				{ token(KWarray); return ARRAY;}
-"begin"				{ token(KWbegin); return BG;}
-"boolean"			{ token(KWboolean); return TYPE;}
-"def"				{ token(KWdef);}
-"do"				{ token(KWdo); return DO;}
-"else"				{ token(KWelse); return ELSE;}
-"end"				{ token(KWend); return END;}
-"false"				{ token(KWfalse); return FALSE;}
-"for"				{ token(KWfor); return FOR;}
-"integer"			{ token(KWinteger); return TYPE;}
-"if"				{ token(KWif); return IF;}
-"of"				{ token(KWof); return OF;}
-"print"				{ token(KWprint); return PRINT;}
-"read"				{ token(KWread); return READ;}
-"real"				{ token(KWreal); return TYPE;}
-"string"			{ token(KWstring); return TYPE;}
-"then"				{ token(KWthen); return THEN;}
-"to"				{ token(KWto); return TO;}
-"true"				{ token(KWtrue); return TRUE;}
-"return"			{ token(KWreturn); return RETURN;}
-"var"				{ token(KWvar); return VAR;}
-"while"				{ token(KWwhile); return WHILE;}
-
-{octal} { tokenOctInteger("oct_integer",yytext);return INT;}
-{identifier}			{ tokenString("id",yytext); return IDENT;}
-{integer}			{ tokenInteger("integer",atoi(yytext)); return INT;}
-{float}				{ tokenFloat("float",yytext); return FLOAT;}
-{scientific}			{ tokenScientific("scientific", yytext); return SCI;}
+{octal}      { tokenOctInteger("oct_integer", yytext);	return INT;}
+{identifier} { tokenString("id", yytext);				return IDENT;}
+{integer}	 { tokenInteger("integer", atoi(yytext));	return INT;}
+{float}		 { tokenFloat("float", yytext);				return FLOAT;}
+{scientific} { tokenScientific("scientific", yytext);	return SCI;}
 
 "\""				{ /* begin string  */
 				  LIST;
@@ -108,7 +107,7 @@ identifier ({letter})({letter}|{digit})*
 
 <STR>([^"\n])*			{
 				  LIST;
-				  strcat( strContent, yytext );
+				  strcat( str_content, yytext );
 				}
 
 <STR>"\""			{ /* end of string or "" */
@@ -118,28 +117,28 @@ identifier ({letter})({letter}|{digit})*
 				  {
 					LIST;
 					strcat( buf, "\"" );
-					strcat( strContent, "\"" );
+					strcat( str_content, "\"" );
 				  }
 				  else			/* end of string */
 				  {
 					unput(c);
 					strcat(buf,"\"");
 					if (Opt_T)
-						printf("<%s: %s>\n", "string", strContent );
-					strContent[0] = '\0';
+						printf("<%s: %s>\n", "string", str_content );
+					str_content[0] = '\0';
 				  	BEGIN INITIAL;
 					return STRING;
 				  }
 				}
 <STR>"\n"			{
 				  /* error, cancel execution immediately!  */
-				  fprintf( stdout, "error at line %d: string `%s` missing terminating \" character\n", linenum, strContent );
+				  fprintf( stdout, "error at line %d: string `%s` missing terminating \" character\n", linenum, str_content );
 				  exit(-1);
 				}
 
 "//&"[A-Z][+-][^\n]*		{ /* pseudo comment */
 				  LIST;
-				  setPseudoComment( yytext );
+				  set_pseudo_comment( yytext );
 				}
 "//"				{ /* C++ stype comment */
 				  LIST;
@@ -218,7 +217,7 @@ int  main( int argc, char **argv )
 }
 */
 
-void setPseudoComment( const char *text )
+void set_pseudo_comment( const char *text )
 {
 	/* format : //&[A-Z][+-] */
 	switch( text[3] ) {
