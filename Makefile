@@ -31,3 +31,10 @@ test:
 	diff -r ExAns 0413220/ans; \
 	echo ---- diff end ------; \
 	rm -r 0413220.zip 0413220/ 
+
+.PHONE: build
+build:
+	mkdir 0413220; \
+	cp lex.l Makefile parser.y 0413220; \
+	7z a -tzip 0413220.zip 0413220 >/dev/null ; \
+	rm -r 0413220;
