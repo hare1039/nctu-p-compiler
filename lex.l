@@ -30,13 +30,13 @@ int  yylex(void);
 void set_pseudo_comment( const char * );	/* pseudo comment option switch */
 %}
 
-whitespace [ \t]+
-letter [A-Za-z]
-digit [0-9]
-integer 0|[1-9][0-9]*
-octal 0[0-7]+
-fraction 0|[0-9]*
-float {integer}"."{fraction}
+whitespace  [ \t]+
+letter      [A-Za-z]
+digit       [0-9]
+integer     0|[1-9][0-9]*
+octal       0[0-7]+
+fraction    0|[0-9]*
+float       {integer}"."{fraction}
 scientific ({integer}|{float}|{octal})[Ee][+-]?({integer}|{octal})
 identifier ({letter})({letter}|{digit})*
 
@@ -72,7 +72,7 @@ identifier ({letter})({letter}|{digit})*
 "not"		 { token(not);		return NOT;}
 			 
 "array"		 { token(KWarray);	return ARRAY;}
-"begin"		 { token(KWbegin);	return BG;}
+"begin"		 { token(KWbegin);	return KWBEGIN;}
 "boolean"	 { token(KWboolean); return TYPE;}
 "def"		 { token(KWdef);}
 "do"		 { token(KWdo);		return DO;}
@@ -95,9 +95,9 @@ identifier ({letter})({letter}|{digit})*
 "while"		 { token(KWwhile);	return WHILE;}
 
 {octal}      { tokenOctInteger("oct_integer", yytext);	return INT;}
-{identifier} { tokenString("id", yytext);				return IDENT;}
-{integer}	 { tokenInteger("integer", atoi(yytext));	return INT;}
-{float}		 { tokenFloat("float", yytext);				return FLOAT;}
+{identifier} { tokenString    ("id", yytext);			return IDENT;}
+{integer}	 { tokenInteger   ("integer", atoi(yytext));return INT;}
+{float}		 { tokenFloat     ("float", yytext);		return FLOAT;}
 {scientific} { tokenScientific("scientific", yytext);	return SCI;}
 
 "\""				{ /* begin string  */

@@ -20,14 +20,14 @@ clean:
 
 .PHONE: test
 test:
-	mkdir 0413220 && \
-	cp lex.l Makefile parser.y 0413220 && \
-	7z a -tzip 0413220.zip 0413220 >/dev/null  && \
-	rm -r 0413220 && \
-	mv 0413220.zip compiler-hw2/compiler_examples && \
-	cd compiler-hw2/compiler_examples && \
-	./test.sh && \
-	echo ---- diff start ---- && \
-	diff -r ExAns 0413220/ans && \
-	echo ---- diff end ------ && \
+	mkdir 0413220; \
+	cp lex.l Makefile parser.y 0413220; \
+	7z a -tzip 0413220.zip 0413220 >/dev/null ; \
+	rm -r 0413220; \
+	mv 0413220.zip compiler-hw2/compiler_examples; \
+	cd compiler-hw2/compiler_examples; \
+	./test.sh; \
+	echo ---- diff start ----; \
+	diff -r ExAns 0413220/ans; \
+	echo ---- diff end ------; \
 	rm -r 0413220.zip 0413220/ 
