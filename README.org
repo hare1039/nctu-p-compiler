@@ -1,0 +1,24 @@
+* NCTU 0413220 hw1-report
+  A small p-language compiler
+  1. scanner
+  2. parser
+
+* Platform & dependency:
+** dependency
+  - make
+  - flex
+  - bison
+** Platform
+  - Linux
+  - FreeBSD
+  - macOS
+
+* compile
+  make
+  Binaries will generate as `./parser`
+
+* Usage
+  `./parser [file]`
+
+* Ability
+  Same as `project.pdf` required.

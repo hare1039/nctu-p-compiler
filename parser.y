@@ -166,7 +166,7 @@ varible_reference				: array_reference
 
 expressions						: expression
                                 | integer_expression
-                                | boolean_expr
+                                | bool_expression
                                 ;
 
 expression						: '-' expression %prec NEG
@@ -186,7 +186,7 @@ integer_expression				: int_constant
                                 | identifier
                                 ;
 
-boolean_expr					: expression '>' expression
+bool_expression					: expression '>' expression
                                 | expression '<' expression
                                 | expression LE  expression %prec '>'
                                 | expression GE  expression %prec '>'
@@ -208,13 +208,13 @@ expression_list					: /* empty */
                                 | expression_list ',' expression
                                 ;
 
-conditional						: IF boolean_expr THEN conditional_body END IF
+conditional						: IF bool_expression THEN conditional_body END IF
                                 ;
 
 conditional_body				: statements
                                 | statements ELSE statements
 
-while							: WHILE boolean_expr DO statements END DO
+while							: WHILE bool_expression DO statements END DO
                                 ;
 
 for								: FOR identifier ASSIGN int_constant TO int_constant DO statements END DO
