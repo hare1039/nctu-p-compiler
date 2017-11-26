@@ -1,24 +1,32 @@
-TARGET	= parser
-OBJECT	= lex.yy.c y.tab.h y.tab.c y.output
-CC		= clang -g
-LEX		= flex
-LIBS	= -lfl -ly
-YACC	= yacc -d -v
+TARGET	  = parser
+OBJECT	  = lex.yy.c y.tab.h y.tab.c y.output libstack_interface.so libstlstack.so
+CC		  = clang -g
+CXX       = clang++
+CXX_FLAGS = -std=c++14 -shared -fPIC
+LEX		  = flex
+LIBS	  = -L. -lfl -ly -lstack_interface -lstlstack
+YACC	  = yacc -d -v
 
-all: lex.yy.c y.tab.c
-	$(CC) lex.yy.c y.tab.c -o $(TARGET) $(LIBS)
+all: lex.yy.c y.tab.c libstack_interface.so
+	$(CC) -o $(TARGET) $(LIBS) lex.yy.c y.tab.c
 
 y.tab.c: parser.y
-	$(YACC) parser.y
+	$(YACC) $<
 
 lex.yy.c: lex.l
-	$(LEX) lex.l
+	$(LEX) -o $@ $<
+
+libstack_interface.so: stack_interface.cpp libstlstack.so
+	$(CXX) $(CXX_FLAGS) -L. -lstlstack -o $@ $<
+
+libstlstack.so: stlstack.cpp
+	$(CXX) $(CXX_FLAGS) $< -o $@
 
 .PHONY: clean
 clean:
 	rm $(TARGET) $(OBJECT)
 
-.PHONE: test
+.PHONY: test
 test:
 	mkdir 0413220; \
 	cp lex.l Makefile parser.y 0413220; \
@@ -32,7 +40,7 @@ test:
 	echo ---- diff end ------; \
 	rm -r 0413220.zip 0413220/ 
 
-.PHONE: build
+.PHONY: build
 build:
 	mkdir 0413220; \
 	cp lex.l Makefile parser.y README.org 0413220; \

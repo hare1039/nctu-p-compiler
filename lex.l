@@ -73,7 +73,7 @@ identifier ({letter})({letter}|{digit})*
 			 
 "array"		 { token(KWarray);	return ARRAY;}
 "begin"		 { token(KWbegin);	return KWBEGIN;}
-"boolean"	 { token(KWboolean); return TYPE;}
+"boolean"	 { token(KWboolean);return TYPE;}
 "def"		 { token(KWdef);}
 "do"		 { token(KWdo);		return DO;}
 "else"		 { token(KWelse);	return ELSE;}
@@ -94,11 +94,11 @@ identifier ({letter})({letter}|{digit})*
 "var"		 { token(KWvar);	return VAR;}
 "while"		 { token(KWwhile);	return WHILE;}
 
-{octal}      { tokenOctInteger("oct_integer", yytext);	return INT;}
-{identifier} { tokenString    ("id", yytext);			return IDENT;}
-{integer}	 { tokenInteger   ("integer", atoi(yytext));return INT;}
-{float}		 { tokenFloat     ("float", yytext);		return FLOAT;}
-{scientific} { tokenScientific("scientific", yytext);	return SCI;}
+{octal}      { sscanf(yytext, "%o", &yylval.integer_); tokenOctInteger("oct_integer", yytext);	return INT;}
+{identifier} { yylval.string_     = strdup(yytext)   ; tokenString    ("id", yytext);			return IDENT;}
+{integer}	 { sscanf(yytext, "%d", &yylval.integer_); tokenInteger   ("integer", atoi(yytext));return INT;}
+{float}		 { sscanf(yytext, "%f", &yylval.float_)  ; tokenFloat     ("float", yytext);		return FLOAT;}
+{scientific} { yylval.string_     = strdup(yytext)   ; tokenScientific("scientific", yytext);	return SCI;}
 
 "\""				{ /* begin string  */
 				  LIST;
@@ -125,6 +125,7 @@ identifier ({letter})({letter}|{digit})*
 					strcat(buf,"\"");
 					if (Opt_T)
 						printf("<%s: %s>\n", "string", str_content );
+                    yylval.string_ = strdup(str_content);
 					str_content[0] = '\0';
 				  	BEGIN INITIAL;
 					return STRING;
@@ -196,27 +197,6 @@ identifier ({letter})({letter}|{digit})*
 				}
 
 %%
-/*
-int  main( int argc, char **argv )
-{
-	if( argc != 2 ) {
-		fprintf(  stdout,  "Usage:  ./scanner  [filename]\n"  );
-		exit(0);
-	}
-
-	FILE *fp = fopen( argv[1], "r" );
-
-	if( fp == NULL )  {
-		fprintf( stdout, "Open  file  error\n" );
-		exit(-1);
-	}
-
-	yyin = fp;
-	yylex();
-	exit(0);
-}
-*/
-
 void set_pseudo_comment( const char *text )
 {
 	/* format : //&[A-Z][+-] */

@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "stack_interface.h"
 extern int   linenum;           /* declared in lex.l */
 extern FILE *yyin;              /* declared by lex */
 extern char *yytext;            /* declared by lex */
@@ -9,14 +9,27 @@ extern char  buf[8192];         /* declared in lex.l */
 
 extern int yylex(void);
 int yyerror(char *);
+
+table_stack_ptr stack_table = NULL;
+
 %}
 
+
+%union {
+    float 	float_;
+    int 	integer_;
+	char   *string_;
+}
+						
 /* symbols */
 %token KWBEGIN END ASSIGN PRINT READ
 %token WHILE DO FOR RETURN IF THEN ELSE
-%token ARRAY OF TO VAR IDENT TYPE					   
-%token MOD INT FLOAT SCI OCTAL TRUE FALSE STRING
-%token LE GE NE NOT AND OR
+%token ARRAY OF TO VAR TYPE					   
+%token <integer_> INT OCTAL
+%token <float_>   FLOAT
+%token <string_>  SCI IDENT STRING
+						
+%token LE GE NE NOT AND OR MOD TRUE FALSE
 						
 %left PARENTHESES
 %left NEG
@@ -252,8 +265,15 @@ int  main( int argc, char **argv )
 	}
 
 	yyin = fp;
+
+	stack_table = new_table_stack();
+	table_ptr t = new_table();
+	table_stack_push(stack_table, t);
 	yyparse();
 
+	table_stack_pop(stack_table);
+	delete_table_stack(stack_table);
+	
 	fprintf( stdout, "\n" );
 	fprintf( stdout, "|--------------------------------|\n" );
 	fprintf( stdout, "|  There is no syntactic error!  |\n" );
