@@ -1,14 +1,14 @@
 TARGET	  = parser
-OBJECT	  = lex.yy.c y.tab.h y.tab.c y.output libstack_interface.so libstlstack.so
+OBJECT	  = lex.yy.c y.tab.h y.tab.c y.output stack_interface.o stlstack.o
 CC		  = clang -g
 CXX       = clang++
-CXX_FLAGS = -std=c++14 -shared -fPIC
+CXX_FLAGS = -std=c++14
 LEX		  = flex
-LIBS	  = -L. -lfl -ly -lstack_interface -lstlstack
+LIBS	  = -lfl -ly -lstdc++
 YACC	  = yacc -d -v
 
-all: lex.yy.c y.tab.c libstack_interface.so
-	$(CC) -o $(TARGET) $(LIBS) lex.yy.c y.tab.c
+all: stack_interface.o stlstack.o lex.yy.c y.tab.c
+	$(CC) -o $(TARGET) $(LIBS) $^
 
 y.tab.c: parser.y
 	$(YACC) $<
@@ -16,11 +16,11 @@ y.tab.c: parser.y
 lex.yy.c: lex.l
 	$(LEX) -o $@ $<
 
-libstack_interface.so: stack_interface.cpp libstlstack.so
-	$(CXX) $(CXX_FLAGS) -L. -lstlstack -o $@ $<
+stack_interface.o: stack_interface.cpp
+	$(CXX) $(CXX_FLAGS) -o $@ -c $<
 
-libstlstack.so: stlstack.cpp
-	$(CXX) $(CXX_FLAGS) $< -o $@
+stlstack.o: stlstack.cpp
+	$(CXX) $(CXX_FLAGS) -o $@ -c $<
 
 .PHONY: clean
 clean:
