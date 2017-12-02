@@ -34,11 +34,24 @@ test:
 	rm -r 0413220; \
 	mv 0413220.zip test_files; \
 	cd test_files; \
-	./test.sh; \
+	./test2.sh; \
 	rm -r 0413220.zip 0413220/
-#	echo ---- diff start ----; \
-#	diff -r ExAns 0413220/ans; \
-#	echo ---- diff end ------; 
+
+.PHONY: test2
+test2:
+	mkdir 0413220; \
+	cp lex.l Makefile parser.y stack_interface* stlstack* 0413220; \
+	7z a -tzip 0413220.zip 0413220 >/dev/null ; \
+	rm -r 0413220; \
+	mv 0413220.zip test_files; \
+	cd test_files; \
+	./test2.sh;
+
+.PHONY: test2clean
+test2clean:
+	cd test_files;\
+	rm -r 0413220.zip 0413220/
+
 
 .PHONY: build
 build:

@@ -43,10 +43,32 @@ void Table::show()
 		std::printf("%-11s", entry->get_kind().c_str());
 		std::printf("%d%-10s", entry->level, (entry->level == 0)? "(global)": "(local)");
 		std::printf("%-17s", entry->type.c_str());
-		std::printf("%-11s", "attr");
+		std::printf("%-11s", (entry->attribute_data == "" )?
+					std::to_string(entry->attribute.val).c_str():
+					entry->attribute_data.c_str());
 		std::printf("\n");				
 	}
 	for(int i(0); i < 110; i++)
 		std::printf("-");
 	std::printf("\n");
+}
+
+
+Array_object::~Array_object() {
+	if(of) delete of;
+}
+std::string Array_object::show()
+{
+    return this->deepest_type() + show_cap();
+}
+
+std::string Array_object::show_cap()
+{
+	if(this->of)
+		return "[" + std::to_string(this->capacity) + "]" + this->of->show_cap();
+	return "[" + std::to_string(this->capacity) + "]";
+}
+
+std::string Array_object::deepest_type() {
+	return (of != nullptr) ? of->deepest_type(): type;
 }

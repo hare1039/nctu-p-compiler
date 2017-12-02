@@ -10,6 +10,8 @@ var gb, gc: boolean;
 var gd: real;
 var ge: string;
 var garray: array 1 to 10 of integer;
+var garray2: array 1 to 100 of boolean;
+
 
 // global constants declaration
 var PI: 3.1415926;

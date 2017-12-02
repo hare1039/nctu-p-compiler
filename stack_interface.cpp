@@ -3,6 +3,27 @@
 
 extern "C"
 {
+    array_object_ptr new_array_object(const char * type, int cap) {
+		return new Array_object {
+			.type = std::string(type),
+			.capacity = cap
+		};
+	}
+    void delete_array_object(array_object_ptr p) {
+		delete p;
+	}
+	char* array_object_show(array_object_ptr p) {
+		return strdup(p->show().c_str());
+	}
+    array_object_ptr array_object_append(array_object_ptr parent, array_object_ptr child) {
+		parent->of = child;
+		return parent;
+	}
+	const char * array_object_deepest_type(array_object_ptr p) {
+		return p->deepest_type().c_str();
+	}
+
+	
     vec_string_ptr new_vec_string() {
 		return new Vec_string;
 	}
@@ -22,14 +43,15 @@ extern "C"
 		return static_cast<int>(p->data.size());
 	}
 
-	entry_ptr new_entry (const char * n, kind_list k, int l, const char * t, union attr a)
+	entry_ptr new_entry (const char * n, kind_list k, int l, const char * t, union attr a, const char * attr_data)
 	{
 		return new Entry {
 			.name  = std::string(n),
 			.kind  = k,
 			.level = l,
 			.type  = std::string(t),
-			.attribute = a
+			.attribute = a,
+			.attribute_data = std::string(attr_data)
 		};
 	}
 	void delete_entry(entry_ptr e) {

@@ -2,8 +2,10 @@
 #define __STACK_INTERFACE__
 
 #ifdef __cplusplus
+    #include <cstring>
     #define extc extern "C"
 #else
+    #include <string.h>
     #define extc
 #endif
 
@@ -13,7 +15,7 @@ enum kind_list {K_PROGRAM, K_FUNCTION, K_PARAMETER, K_VARIABLE, K_CONSTANT};
 union attr
 {
 	int val;
-	char * list;
+	const char * list;
 };
 
 struct Table;
@@ -24,6 +26,14 @@ extc typedef struct Table * table_ptr;
 extc typedef struct Entry * entry_ptr;
 extc typedef struct Table_stack * table_stack_ptr;
 extc typedef struct Vec_string  * vec_string_ptr;
+extc typedef struct Array_object * array_object_ptr;
+
+extc array_object_ptr new_array_object(const char * type, int cap);
+extc void             delete_array_object(array_object_ptr);
+extc char *           array_object_show(array_object_ptr);
+extc array_object_ptr array_object_append(array_object_ptr parent, array_object_ptr child);
+extc const char *     array_object_deepest_type(array_object_ptr);
+
 
 extc vec_string_ptr new_vec_string();
 extc void           delete_vec_string(vec_string_ptr);
@@ -32,7 +42,7 @@ extc void           vec_string_clear(vec_string_ptr);
 extc const char *   vec_string_at(vec_string_ptr, int);
 extc int            vec_string_size(vec_string_ptr);
 
-extc entry_ptr      new_entry (const char * name, enum kind_list kind, int level, const char * type, union attr);
+extc entry_ptr      new_entry (const char * name, enum kind_list kind, int level, const char * type, union attr, const char * attr_data);
 extc void           delete_entry(entry_ptr);
 extc const char*    get_name  (entry_ptr);
 extc enum kind_list get_kind  (entry_ptr);
