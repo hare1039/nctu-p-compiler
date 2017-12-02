@@ -6,7 +6,7 @@
 %{
 #include <string.h>
 #include "y.tab.h"
-
+#include "stack_interface.h"
 
 #define LIST strcat( buf, yytext )
 #define token(t)				{ LIST; if (Opt_T) printf("<%s>\n", #t );}
@@ -47,46 +47,46 @@ identifier ({letter})({letter}|{digit})*
 
 %%
 
-","			 { tokenChar(',');  return ',';}
-";"			 { tokenChar(';');  return ';';}
-":"			 { tokenChar(':');  return ':';}
-")"			 { tokenChar(')');  return ')';}
-"("			 { tokenChar('(');  return '(';}
-"["			 { tokenChar('[');  return '[';}
-"]"			 { tokenChar(']');  return ']';}
+","			 { tokenChar(','); yylval.string_ = strdup(yytext); return ',';}
+";"			 { tokenChar(';'); yylval.string_ = strdup(yytext); return ';';}
+":"			 { tokenChar(':'); yylval.string_ = strdup(yytext); return ':';}
+")"			 { tokenChar(')'); yylval.string_ = strdup(yytext); return ')';}
+"("			 { tokenChar('('); yylval.string_ = strdup(yytext); return '(';}
+"["			 { tokenChar('['); yylval.string_ = strdup(yytext); return '[';}
+"]"			 { tokenChar(']'); yylval.string_ = strdup(yytext); return ']';}
+			 				   
+"+"			 { tokenChar('+'); yylval.string_ = strdup(yytext);	return '+';}
+"-"			 { tokenChar('-'); yylval.string_ = strdup(yytext);	return '-';}
+"*"			 { tokenChar('*'); yylval.string_ = strdup(yytext);	return '*';}
+"/"			 { tokenChar('/'); yylval.string_ = strdup(yytext);	return '/';}
+"mod"		 { token(mod);     yylval.string_ = strdup(yytext); return MOD;}
+":="		 { token(:=);      yylval.string_ = strdup(yytext);	return ASSIGN;}
+"<"			 { tokenChar('<'); yylval.string_ = strdup(yytext);	return '<'; }
+"<="		 { token(<=);      yylval.string_ = strdup(yytext);	return LE; }
+"<>"		 { token(<>);      yylval.string_ = strdup(yytext);	return NE;}
+">="		 { token(>=);      yylval.string_ = strdup(yytext);	return GE;}
+">"			 { tokenChar('>'); yylval.string_ = strdup(yytext);	return '>';}
+"="			 { tokenChar('='); yylval.string_ = strdup(yytext);	return '=';}
+"and"		 { token(and);     yylval.string_ = strdup(yytext);	return AND;}
+"or"		 { token(or);      yylval.string_ = strdup(yytext);	return OR;}
+"not"		 { token(not);     yylval.string_ = strdup(yytext);	return NOT;}
 			 
-"+"			 { tokenChar('+');	return '+';}
-"-"			 { tokenChar('-');	return '-';}
-"*"			 { tokenChar('*');	return '*';}
-"/"			 { tokenChar('/');	return '/';}
-"mod"		 { token(mod);		return MOD;}
-":="		 { token(:=);		return ASSIGN;}
-"<"			 { tokenChar('<');	return '<'; }
-"<="		 { token(<=);		return LE; }
-"<>"		 { token(<>);		return NE;}
-">="		 { token(>=);		return GE;}
-">"			 { tokenChar('>');	return '>';}
-"="			 { tokenChar('=');	return '=';}
-"and"		 { token(and);		return AND;}
-"or"		 { token(or);		return OR;}
-"not"		 { token(not);		return NOT;}
-			 
+"boolean"	 { token(KWboolean); yylval.string_ = strdup("boolean"); return TYPE;}
+"integer"	 { token(KWinteger); yylval.string_ = strdup("integer"); return TYPE;}
+"real"		 { token(KWreal);	 yylval.string_ = strdup("real");    return TYPE;}
+"string"	 { token(KWstring);	 yylval.string_ = strdup("string");  return TYPE;}
 "array"		 { token(KWarray);	return ARRAY;}
 "begin"		 { token(KWbegin);	return KWBEGIN;}
-"boolean"	 { token(KWboolean);return TYPE;}
-"def"		 { token(KWdef);}
+"def"		 { token(KWdef);    return DEF;}
 "do"		 { token(KWdo);		return DO;}
 "else"		 { token(KWelse);	return ELSE;}
 "end"		 { token(KWend);	return END;}
 "false"		 { token(KWfalse);	return FALSE;}
 "for"		 { token(KWfor);	return FOR;}
-"integer"	 { token(KWinteger);return TYPE;}
 "if"		 { token(KWif);		return IF;}
 "of"		 { token(KWof);		return OF;}
 "print"		 { token(KWprint);	return PRINT;}
 "read"		 { token(KWread);	return READ;}
-"real"		 { token(KWreal);	return TYPE;}
-"string"	 { token(KWstring);	return TYPE;}
 "then"		 { token(KWthen);	return THEN;}
 "to"		 { token(KWto);		return TO;}
 "true"		 { token(KWtrue);	return TRUE;}

@@ -3,13 +3,32 @@
 
 extern "C"
 {
-	entry_ptr new_entry (const char * n, kind_list k, int l, type_list t, union attr a)
+    vec_string_ptr new_vec_string() {
+		return new Vec_string;
+	}
+    void delete_vec_string(vec_string_ptr p) {
+		delete p;
+	}
+    void vec_string_push_back(vec_string_ptr p, const char * s) {
+		p->data.push_back(s);
+	}
+    void vec_string_clear(vec_string_ptr p) {
+		p->data.clear();
+	}
+    const char * vec_string_at(vec_string_ptr p, int i) {
+		return (p->data.at(i)).c_str();
+	}
+	int vec_string_size(vec_string_ptr p) {
+		return static_cast<int>(p->data.size());
+	}
+
+	entry_ptr new_entry (const char * n, kind_list k, int l, const char * t, union attr a)
 	{
 		return new Entry {
 			.name  = std::string(n),
 			.kind  = k,
 			.level = l,
-			.type  = t,
+			.type  = std::string(t),
 			.attribute = a
 		};
 	}
@@ -25,15 +44,16 @@ extern "C"
 	int get_level (entry_ptr e) {
 		return e->level;
 	}
-	type_list get_type (entry_ptr e) {
-		return e->type;
+	const char * get_type (entry_ptr e) {
+		return e->type.c_str();
 	}
 	union attr get_attribute (entry_ptr e) {
 		return e->attribute;
 	}
 
-		table_ptr new_table() {
-		return new Table;
+	
+	table_ptr new_table(int i) {
+		return new Table(i);
 	}
 	void delete_table(table_ptr p) {
 		delete p;
@@ -52,6 +72,18 @@ extern "C"
 	}
 	int table_contains(table_ptr t, const char * n) {
 		return (t->contains(n))? 1: 0;
+	}
+	entry_ptr table_get_entry(table_ptr t, const char * n) {
+		return t->get_entry(std::string(n));
+	}
+	int table_get_level(table_ptr t) {
+		return t->level;
+	}
+	void table_set_level(table_ptr t, int n) {
+		t->level = n;
+	}
+	void table_print(table_ptr t) {
+		t->show();
 	}
 
 
@@ -76,5 +108,4 @@ extern "C"
     int table_stack_size(table_stack_ptr ts) {
 		return ts->tables.size();
 	}
-
 }

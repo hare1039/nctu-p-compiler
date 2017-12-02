@@ -11,24 +11,24 @@ extern int yylex(void);
 int yyerror(char *);
 
 table_stack_ptr stack_table = NULL;
-
+vec_string_ptr id_list = NULL;
+union attr empty_attr;
 %}
 
 
 %union {
     float 	float_;
     int 	integer_;
-	char   *string_;
+	char*   string_;
 }
 						
 /* symbols */
-%token KWBEGIN END ASSIGN PRINT READ
+%token KWBEGIN END ASSIGN PRINT READ DEF
 %token WHILE DO FOR RETURN IF THEN ELSE
-%token ARRAY OF TO VAR TYPE					   
-%token <integer_> INT OCTAL
-%token <float_>   FLOAT
-%token <string_>  SCI IDENT STRING
-						
+%token ARRAY OF TO VAR TYPE		   
+%token INT OCTAL
+%token FLOAT
+%token SCI IDENT STRING
 %token LE GE NE NOT AND OR MOD TRUE FALSE
 						
 %left PARENTHESES
@@ -40,16 +40,30 @@ table_stack_ptr stack_table = NULL;
 %left AND
 %left OR
 
+%type <string_> WHILE DO FOR RETURN IF THEN ELSE ARRAY OF TO VAR TYPE IDENT STRING SCI
+%type <integer_> INT OCTAL
+%type <float_> FLOAT
+
+%type <string_> identifier programname 
+%type <integer_> int_constant
+%type <string_> identifier_list identifier_list_ext
+						
 %%
 
 program							: programname ';' programbody END programname
-                                ;
+								{
+									entry_ptr entry = new_entry($1, K_PROGRAM, /* level */ 0, "void", empty_attr);
+									table_ptr table = table_stack_top(stack_table);
+									table_push(table, entry);
+                				}
 
-programname						: identifier
-                                ;
+programname						: identifier {
+								    $$ = $1;
+								};
 
-identifier						: IDENT
-                                ;
+identifier						: IDENT {
+           						    $$ = $1;
+           						};
 
 programbody						: varible_list function_list compound
                                 ;
@@ -58,10 +72,14 @@ programbody						: varible_list function_list compound
 /* basic blocks */
 identifier_list					: /* empty */
                                 | identifier_list_ext
-                                ;
+				                ;
 
-identifier_list_ext				: identifier_list_ext ',' identifier
-                                | identifier
+identifier_list_ext				: identifier_list_ext ',' identifier {
+				                	vec_string_push_back(id_list, $3);
+                                }
+                                | identifier {
+                                    vec_string_push_back(id_list, $1);
+                                }
                                 ;
 
 literal_constant				: number
@@ -85,7 +103,9 @@ number							: INT
 
 /* varible list */
 varible_list					: /* empty */
-                                | varible_list_ext
+                                | varible_list_ext {
+								    table_print(table_stack_top(stack_table));
+								}
                                 ;
 
 varible_list_ext				: varible_list_ext varible_declare
@@ -98,7 +118,16 @@ varible_declare					: varible_declare_pod
                                 ;
 
 varible_declare_pod             : VAR identifier_list ':' TYPE ';'
-                                ;
+                                {
+                                    table_ptr table = table_stack_top(stack_table);
+                                    int i;
+                                    for(i = 0; i < vec_string_size(id_list); i++)
+                                    {
+                                        entry_ptr p = new_entry(vec_string_at(id_list, i), K_VARIABLE, table_get_level(table), $4, empty_attr);
+                                        table_push(table, p);
+                                    }
+                                    vec_string_clear(id_list);
+                                };
 
 varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO int_constant OF array_types ';'
                                 ;
@@ -266,11 +295,15 @@ int  main( int argc, char **argv )
 
 	yyin = fp;
 
+	empty_attr.val = 0;
 	stack_table = new_table_stack();
-	table_ptr t = new_table();
+	table_ptr t = new_table(0);
 	table_stack_push(stack_table, t);
+	id_list = new_vec_string();
+
 	yyparse();
 
+	delete_vec_string(id_list);
 	table_stack_pop(stack_table);
 	delete_table_stack(stack_table);
 	
