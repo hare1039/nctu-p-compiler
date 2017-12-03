@@ -197,7 +197,6 @@ varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO 
                                         array_construct = array_object_append(p, array_construct);
 									}
                                     table_ptr  table = table_stack_top(stack_table);
-									union attr att;
 									char * att_data = array_object_show(array_construct);
                                     int i;
                                     for(i = 0; i < vec_string_size(id_list); i++)
@@ -205,9 +204,9 @@ varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO 
                                         entry_ptr p = new_entry(vec_string_at(id_list, i),
                                                                 K_VARIABLE,
                                                                 table_get_level(table),
-                                                                "array_sig",
-                                                                att,
-																att_data);
+                                                                att_data,
+                                                                empty_attr,
+																"");
                                         table_push(table, p);
                                     }
                                     free(att_data);
