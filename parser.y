@@ -175,7 +175,12 @@ varible_declare_pod             : VAR identifier_list ':' TYPE ';'
                                                                 $4,
   																empty_attr,
   																"");
-                                        table_push(table, p);
+                                        int err = table_push(table, p);
+                                        if(err)
+										{
+										    printf("## [ERROR] redeclared var: %s\n", entry_get_name(p));
+										    delete_entry(p);
+										}
                                     }
                                     vec_string_clear(id_list);
                                 };
@@ -373,7 +378,28 @@ conditional_body				: statements
 while							: WHILE bool_expression DO statements END DO
                                 ;
 
-for								: FOR identifier ASSIGN int_constant TO int_constant DO statements END DO
+for								: FOR identifier ASSIGN int_constant TO int_constant DO {
+								    table_ptr table = table_stack_top(stack_table);
+								    char * s = new_for_varrange($4, $6);
+								    
+								    entry_ptr p = new_entry($2,
+                                                            K_VARIABLE,
+                                                            table_get_level(table_stack_top(stack_table)),
+                                                            "integer",
+                                                            empty_attr,
+                                                            s);
+                                    free(s);
+                                    int err = table_push(table, p);
+                                    if(err)
+									{
+									    printf("## [ERROR] for iter: '%s' already declared\n", entry_get_name(p));
+									    delete_entry(p);
+									}
+								} statements END DO {
+table_print(table_stack_top(stack_table));
+									table_remove(table_stack_top(stack_table), $2);
+table_print(table_stack_top(stack_table));
+                                }
                                 ;
 
 return							: RETURN expressions ';'

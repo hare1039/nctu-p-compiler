@@ -34,7 +34,7 @@ test:
 	rm -r 0413220; \
 	mv 0413220.zip test_files; \
 	cd test_files; \
-	./test2.sh; \
+	./test.sh; \
 	rm -r 0413220.zip 0413220/
 
 .PHONY: test2

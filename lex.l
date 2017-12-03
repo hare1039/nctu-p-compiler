@@ -22,7 +22,7 @@
 
 int  Opt_S   = 1;				  /* list source code option */
 int  Opt_T   = 1;				  /* list token option */
-int  Opt_D   = 0;
+int  Opt_D   = 1;
 int  linenum = 1;    			  /* line number */
 char buf[MAX_LINE_LENG];		  /* source code line buffer */
 char str_content[MAX_LINE_LENG];  /* string buffer */

@@ -93,7 +93,18 @@ void Table::show()
 		std::printf("-");
 	std::printf("\n");
 }
-
+void Table::remove(std::string && n)
+{
+	for(auto iter(data.begin()); iter != data.end(); ++iter)
+	{
+		if((*iter)->name == n)
+		{
+			data.erase(iter);
+			delete *iter;
+			return;
+		}
+	}
+}
 
 Array_object::~Array_object() {
 	if(of) delete of;

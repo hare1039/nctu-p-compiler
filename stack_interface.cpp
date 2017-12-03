@@ -72,19 +72,19 @@ extern "C"
 	void delete_entry(entry_ptr e) {
 		delete e;
 	}
-	const char * get_name (entry_ptr e) {
+	const char * entry_get_name (entry_ptr e) {
 		return e->name.c_str();
 	}
-	kind_list  get_kind (entry_ptr e) {
+	kind_list  entry_get_kind (entry_ptr e) {
 		return e->kind;
 	}
-	int get_level (entry_ptr e) {
+	int entry_get_level (entry_ptr e) {
 		return e->level;
 	}
-	const char * get_type (entry_ptr e) {
+	const char * entry_get_type (entry_ptr e) {
 		return e->type.c_str();
 	}
-	union attr get_attribute (entry_ptr e) {
+	union attr entry_get_attribute (entry_ptr e) {
 		return e->attribute;
 	}
 
@@ -95,8 +95,11 @@ extern "C"
 	void delete_table(table_ptr p) {
 		delete p;
 	}
-	void table_push(table_ptr t, entry_ptr ent) {
+	int table_push(table_ptr t, entry_ptr ent) {
+		if (t->contains(std::string(ent->name)))
+			return 1;
 		t->data.push_back(ent);
+		return 0;
 	}
 	entry_ptr table_top (table_ptr t) {
 		return t->data.back();
@@ -122,6 +125,9 @@ extern "C"
 	void table_print(table_ptr t) {
 		t->show();
 	}
+	void table_remove(table_ptr t, const char * name) {
+		t->remove(std::string(name));
+	}
 
 
     table_stack_ptr new_table_stack() {
@@ -144,5 +150,17 @@ extern "C"
 	}
     int table_stack_size(table_stack_ptr ts) {
 		return ts->tables.size();
+	}
+
+
+    // some extra function
+    char * newstringconcat(const char * a, const char * b)
+	{
+		return strdup((std::string(a) + std::string(b)).c_str());
+	}
+
+	char * new_for_varrange(int from, int to)
+	{
+		return strdup(("for [" + std::to_string(from) + "->" + std::to_string(to) + "]").c_str());
 	}
 }

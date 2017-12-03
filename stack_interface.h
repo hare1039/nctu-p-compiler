@@ -65,15 +65,15 @@ extc entry_ptr      new_entry (const char * name,
 							   union attr,
 							   const char * attr_data);
 extc void           delete_entry(entry_ptr);
-extc const char*    get_name  (entry_ptr);
-extc enum kind_list get_kind  (entry_ptr);
-extc int            get_level (entry_ptr);
-extc const char*    get_type  (entry_ptr);
-extc union attr     get_attribute (entry_ptr);
+extc const char*    entry_get_name  (entry_ptr);
+extc enum kind_list entry_get_kind  (entry_ptr);
+extc int            entry_get_level (entry_ptr);
+extc const char*    entry_get_type  (entry_ptr);
+extc union attr     entry_get_attribute (entry_ptr);
 
 extc table_ptr   new_table(int);
 extc void        delete_table(table_ptr);
-extc void        table_push(table_ptr, entry_ptr);
+extc int         table_push(table_ptr, entry_ptr);
 extc entry_ptr   table_top (table_ptr);
 extc entry_ptr   table_pop (table_ptr);
 extc int         table_contains(table_ptr, const char *);
@@ -81,6 +81,7 @@ extc entry_ptr   table_get_entry(table_ptr, const char *);
 extc int         table_get_level(table_ptr);
 extc void        table_set_level(table_ptr, int);
 extc void        table_print(table_ptr);
+extc void        table_remove(table_ptr, const char * name);
 
 extc table_stack_ptr new_table_stack();
 extc void            delete_table_stack(table_stack_ptr);
@@ -88,5 +89,10 @@ extc void            table_stack_push(table_stack_ptr, table_ptr);
 extc table_ptr       table_stack_top (table_stack_ptr);
 extc table_ptr       table_stack_pop (table_stack_ptr);
 extc int             table_stack_size(table_stack_ptr);
+
+// some extra function
+extc char *          newstringconcat(const char *, const char *);
+extc char *          new_for_varrange(int from, int to);
+
 
 #endif//__STACK_INTERFACE__

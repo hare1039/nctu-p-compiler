@@ -46,6 +46,7 @@ struct Table
 	bool contains(std::string && s);
 	Entry* get_entry(std::string && name);
 	void show();
+	void remove(std::string && name);
 	Table(int l): level(l){}
 	~Table();
 };
