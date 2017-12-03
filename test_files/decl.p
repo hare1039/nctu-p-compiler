@@ -11,13 +11,25 @@ var gb, gc: boolean;
 var gd: real;
 var ge: string;
 var garray: array 1 to 10 of integer;
-var garray2: array 1 to 100 of boolean;
+var garray2: array 1 to 100 of array 5 to 10 of boolean;
 var gb: real; 
 
 // global constants declaration
 var PI: 3.1415926;
 var course: "Introduction to Compiler Design";
 var isPass: true;
+   //  ; b:array 1 to 2 of array 2 to 4 of real 
+   func( a:integer; b, q :real; c: boolean; ffd: integer ): boolean;
+begin
+   var x: "hello world";
+//   begin
+//	  var y	: real;
+//	  return 1 > 2;
+//   end
+end
+end func
+
+
 
 begin
         // local constants declaration
