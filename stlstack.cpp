@@ -85,8 +85,10 @@ void Table::show()
 		std::printf("%d%-10s", entry->level, (entry->level == 0)? "(global)": "(local)");
 		std::printf("%-17s", entry->type.c_str());
 		std::printf("%-11s", (entry->attribute_data == "" )?
-					std::to_string(entry->attribute.val).c_str():
-					entry->attribute_data.c_str());
+					             ((entry->attribute.val != 0)?
+								     std::to_string(entry->attribute.val).c_str():
+								     std::string().c_str()):
+					          entry->attribute_data.c_str());
 		std::printf("\n");				
 	}
 	for(int i(0); i < 110; i++)
