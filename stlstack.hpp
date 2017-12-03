@@ -5,7 +5,23 @@
 #include <cstdio>
 #include <vector>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <cmath>
+#include <string>
 #include "stack_interface.h"
+
+struct Const_type
+{
+	int    int_val;
+	double real_val;
+	bool   bool_val;
+	std::string string_val;
+	std::string type;
+	static
+	double to_double(std::string && sci);
+	std::string get_attrbute_string();
+};
 
 struct Vec_string
 {
@@ -21,17 +37,6 @@ struct Entry
 	union attr  attribute;
 	std::string attribute_data;
 	std::string get_kind();
-
-//	Entry(const char * n, kind_list k, int l, const char * t, union attr a, const char * attr_data):
-//		name(n),
-//        kind(k),
-//        level(l),
-//        type(t)
-//		{
-//			if(std::string(attr_data) != "") {
-//				attribute
-//			} 
-//		}
 };
 
 struct Table

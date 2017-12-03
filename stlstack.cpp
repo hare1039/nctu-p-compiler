@@ -1,5 +1,41 @@
 #include "stlstack.hpp"
 
+double Const_type::to_double(std::string && sci)
+{
+	std::transform(sci.begin(), sci.end(), sci.begin(), ::tolower);
+	std::string part1, part2;
+	{
+		std::stringstream ss(sci);
+		std::getline(ss, part1, 'e');
+		std::getline(ss, part2);
+	}
+	double pt1, pt2;
+	{
+		std::stringstream ss(part1);
+		ss >> pt1;
+	}
+	{
+		std::stringstream ss(part2);
+        ss >> pt2;
+	}
+	return pt1 * std::pow(10, pt2);
+}
+std::string Const_type::get_attrbute_string()
+{
+	if     (this->type == "integer")
+		return std::to_string(int_val);
+	else if(this->type == "real")
+		return std::to_string(real_val);
+	else if(this->type == "boolean")
+		return (this->bool_val)? "TRUE": "FALSE";
+	else if(this->type == "string")
+		return string_val;
+	else
+		return "";
+}
+
+
+
 std::string Entry::get_kind()
 {
 	switch(this->kind)

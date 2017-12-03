@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "stack_interface.h"
 extern int   linenum;           /* declared in lex.l */
 extern FILE *yyin;              /* declared by lex */
@@ -15,6 +16,7 @@ table_stack_ptr stack_table = NULL;
 vec_string_ptr id_list = NULL;
 union attr empty_attr;
 array_object_ptr array_construct = NULL;
+
 %}
 
 %code requires {
@@ -27,6 +29,7 @@ array_object_ptr array_construct = NULL;
     int 	integer_;
 	char*   string_;
 	array_object_ptr arr_ptr_;
+	const_type_ptr   const_ptr_;
 }
 						
 /* symbols */
@@ -51,14 +54,18 @@ array_object_ptr array_construct = NULL;
 %type <integer_> INT OCTAL
 %type <float_> FLOAT
 
-%type <string_> identifier programname 
+%type <string_> identifier programname bool_constant
 %type <integer_> int_constant
+						 
 %type <string_> identifier_list identifier_list_ext array_types
+%type <const_ptr_> number literal_constant
+
+						
 %%
 
 program							: programname ';' programbody END programname
 								{
-	entry_ptr entry = new_entry($1, K_PROGRAM, /* level */ 0, "void", empty_attr, "");
+	                                entry_ptr entry = new_entry($1, K_PROGRAM, /* level */ 0, "void", empty_attr, "");
 									table_ptr table = table_stack_top(stack_table);
 									table_push(table, entry);
                 				}
@@ -88,22 +95,54 @@ identifier_list_ext				: identifier_list_ext ',' identifier {
                                 }
                                 ;
 
-literal_constant				: number
-                                | STRING
-                                | bool_constant
+literal_constant				: number {
+                                    $$ = $1;
+                                }
+                                | STRING {
+                                    const_type_ptr p = new_const_type();
+                                    const_type_set_type(p, "string");
+                                    const_type_set_string(p, $1);
+                                    $$ = p;
+                                }
+                                | bool_constant {
+                                    const_type_ptr p = new_const_type();
+                                    const_type_set_type(p, "boolean");
+                                    const_type_set_bool(p, $1);
+                                    $$ = p;
+                                }
                                 ;
 
-bool_constant					: TRUE
-                                | FALSE
+bool_constant					: TRUE  { $$ = "true"; }
+                                | FALSE { $$ = "false"; }
                                 ;
 
-int_constant					: INT
+int_constant					: INT { $$ = $1; }
                                 ;
 
-number							: INT
-                                | SCI
-                                | FLOAT
-                                | OCTAL
+number							: INT {
+                                    const_type_ptr p = new_const_type();
+                                    const_type_set_type(p, "integer");
+                                    const_type_set_int(p, $1);
+                                    $$ = p;
+                                }
+                                | SCI {
+                                    const_type_ptr p = new_const_type();
+                                    const_type_set_type(p, "real");
+                                    const_type_set_science(p, $1);
+                                    $$ = p;
+                                }
+                                | FLOAT {
+                                    const_type_ptr p = new_const_type();
+                                    const_type_set_type(p, "real");
+                                    const_type_set_real(p, $1);
+                                    $$ = p;
+                                }
+                                | OCTAL {
+                                    const_type_ptr p = new_const_type();
+                                    const_type_set_type(p, "integer");
+                                    const_type_set_int(p, $1);
+                                    $$ = p;
+                                }
                                 ;
 
 
@@ -147,7 +186,7 @@ varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO 
 									}
                                     else
 									{
-									    array_object_ptr p = new_array_object($9, $7 - $5);
+									    array_object_ptr p = new_array_object("", $7 - $5);
                                         array_construct = array_object_append(p, array_construct);
 									}
                                     table_ptr  table = table_stack_top(stack_table);
@@ -172,7 +211,6 @@ varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO 
                                 ;
 
 array_types						: ARRAY int_constant TO int_constant OF array_types {
-	printf("%s", array_object_show(array_construct));
                                     if(! array_construct)
 									{
 									    array_construct = new_array_object($6, $4 - $2);
@@ -188,7 +226,23 @@ array_types						: ARRAY int_constant TO int_constant OF array_types {
  								}
                                 ;
 
-varible_declare_constant        : VAR identifier_list ':' literal_constant ';'
+varible_declare_constant        : VAR identifier_list ':' literal_constant ';' {
+                                    table_ptr table = table_stack_top(stack_table);
+                                    int i;
+                                    for(i = 0; i < vec_string_size(id_list); i++)
+                                    {
+                                        char * s = const_type_get_attrbute_string($4);
+                                        entry_ptr p = new_entry(vec_string_at(id_list, i),
+                                                                K_CONSTANT,
+                                                                table_get_level(table),
+                                                                const_type_get_type($4),
+  																empty_attr,
+  															    s);
+                                        free(s);
+                                        table_push(table, p);
+                                    }
+                                    vec_string_clear(id_list);		    
+								}
                                 ;
 
 

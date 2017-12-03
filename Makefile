@@ -4,7 +4,7 @@ CC		  = clang -g
 CXX       = clang++
 CXX_FLAGS = -std=c++14
 LEX		  = flex
-LIBS	  = -lfl -ly -lstdc++
+LIBS	  = -lfl -ly -lstdc++ -lm
 YACC	  = yacc -d -v
 
 all: stack_interface.o stlstack.o lex.yy.c y.tab.c

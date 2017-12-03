@@ -27,6 +27,22 @@ extc typedef struct Entry * entry_ptr;
 extc typedef struct Table_stack * table_stack_ptr;
 extc typedef struct Vec_string  * vec_string_ptr;
 extc typedef struct Array_object * array_object_ptr;
+extc typedef struct Const_type * const_type_ptr;
+
+extc const_type_ptr new_const_type();
+extc void           delete_const_type(const_type_ptr);
+extc void           const_type_set_type(const_type_ptr, const char *);
+extc const char *   const_type_get_type(const_type_ptr);
+extc void           const_type_set_int(const_type_ptr, int);
+extc void           const_type_set_real(const_type_ptr, double);
+extc void           const_type_set_bool(const_type_ptr, const char *);
+extc void           const_type_set_string(const_type_ptr, const char *);
+extc void           const_type_set_science(const_type_ptr, const char *);
+extc int            const_type_get_int(const_type_ptr);
+extc double         const_type_get_real(const_type_ptr);
+extc int            const_type_get_bool(const_type_ptr);
+extc const char *   const_type_get_string(const_type_ptr);
+extc char *         const_type_get_attrbute_string(const_type_ptr);
 
 extc array_object_ptr new_array_object(const char * type, int cap);
 extc void             delete_array_object(array_object_ptr);
@@ -42,7 +58,12 @@ extc void           vec_string_clear(vec_string_ptr);
 extc const char *   vec_string_at(vec_string_ptr, int);
 extc int            vec_string_size(vec_string_ptr);
 
-extc entry_ptr      new_entry (const char * name, enum kind_list kind, int level, const char * type, union attr, const char * attr_data);
+extc entry_ptr      new_entry (const char * name,
+							   enum kind_list kind,
+							   int level,
+							   const char * type,
+							   union attr,
+							   const char * attr_data);
 extc void           delete_entry(entry_ptr);
 extc const char*    get_name  (entry_ptr);
 extc enum kind_list get_kind  (entry_ptr);

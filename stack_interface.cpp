@@ -3,6 +3,21 @@
 
 extern "C"
 {
+    const_type_ptr new_const_type() { return new Const_type; }
+    void           delete_const_type  (const_type_ptr p)                 { delete p; }
+    void           const_type_set_type(const_type_ptr p, const char * t) { p->type = t;}
+    const char *   const_type_get_type(const_type_ptr p)                 { return p->type.c_str(); }
+    void           const_type_set_int (const_type_ptr p, int i)          { p->int_val = i; }
+    void           const_type_set_real(const_type_ptr p, double d)       { p->real_val = d; }
+	void           const_type_set_bool(const_type_ptr p, const char *s)  { p->bool_val = (std::string(s) == "false")? false: true; }
+	void           const_type_set_string(const_type_ptr p, const char *s){ p->string_val = std::string(s); }
+    void           const_type_set_science(const_type_ptr p, const char *s) { p->real_val = Const_type::to_double(std::string(s)); }
+    int            const_type_get_int (const_type_ptr p)                 { return p->int_val; }
+    double         const_type_get_real(const_type_ptr p)                 { return p->real_val; }
+	int            const_type_get_bool(const_type_ptr p)                 { return (p->bool_val)? 1: 0; }
+	const char *   const_type_get_string(const_type_ptr p)               { return p->string_val.c_str(); }
+    char *         const_type_get_attrbute_string(const_type_ptr p)      { return strdup(p->get_attrbute_string().c_str()); }
+	
     array_object_ptr new_array_object(const char * type, int cap) {
 		return new Array_object {
 			.type = std::string(type),
