@@ -2,6 +2,7 @@
  * decl.p: declarations
  */
 //&T-
+//&D+
 decl;
 
 // global variables declaration

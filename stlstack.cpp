@@ -64,6 +64,11 @@ Entry* Table::get_entry(std::string && name)
 	return nullptr;
 }
 
+Table::~Table() {
+	for(auto & s: this->data)
+		delete s;
+}
+
 void Table::show()
 {
     for(int i(0); i < 110; i++)

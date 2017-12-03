@@ -8,8 +8,8 @@ extern int   linenum;           /* declared in lex.l */
 extern FILE *yyin;              /* declared by lex */
 extern char *yytext;            /* declared by lex */
 extern char  buf[8192];         /* declared in lex.l */
-
-extern int yylex(void);
+extern int   Opt_D;
+extern int   yylex(void);
 int yyerror(char *);
 
 table_stack_ptr stack_table = NULL;
@@ -149,6 +149,7 @@ number							: INT {
 /* varible list */
 varible_list					: /* empty */
                                 | varible_list_ext {
+                                if(Opt_D)
 								    table_print(table_stack_top(stack_table));
 								}
                                 ;
@@ -293,7 +294,14 @@ statement						: compound
 
 
 /* compound statements */
-compound						: KWBEGIN varible_list statements END
+compound						: KWBEGIN {
+                                    table_ptr p = new_table(table_stack_size(stack_table));
+                                    table_stack_push(stack_table, p);
+                                }
+                                varible_list statements END {
+                                    table_ptr p = table_stack_pop(stack_table);
+                                    delete_table(p);
+                                }
                                 ;
 
 simple							: varible_reference ASSIGN expressions ';'

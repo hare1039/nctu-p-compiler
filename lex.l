@@ -22,6 +22,7 @@
 
 int  Opt_S   = 1;				  /* list source code option */
 int  Opt_T   = 1;				  /* list token option */
+int  Opt_D   = 0;
 int  linenum = 1;    			  /* line number */
 char buf[MAX_LINE_LENG];		  /* source code line buffer */
 char str_content[MAX_LINE_LENG];  /* string buffer */
@@ -213,6 +214,13 @@ void set_pseudo_comment( const char *text )
 		else if( text[4] == '-' )
 			Opt_T = 0;
 	 	break;
+	 case 'D':
+        if( text[4] == '+' )
+            Opt_D = 1;
+        else if( text[4] == '-' )
+            Opt_D = 0;
+		printf("'Opt_D:%d'\n", Opt_D);
+        break;
 	 default:
 	 	break;
 	}

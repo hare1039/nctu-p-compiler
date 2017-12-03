@@ -47,6 +47,7 @@ struct Table
 	Entry* get_entry(std::string && name);
 	void show();
 	Table(int l): level(l){}
+	~Table();
 };
 
 struct Table_stack
