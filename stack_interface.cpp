@@ -153,14 +153,19 @@ extern "C"
 	}
 
 
-    // some extra function
-    char * newstringconcat(const char * a, const char * b)
-	{
+    // some extra functions
+    char * newstringconcat(const char * a, const char * b) {
 		return strdup((std::string(a) + std::string(b)).c_str());
 	}
 
-	char * new_for_varrange(int from, int to)
-	{
+	char * new_for_varrange(int from, int to) {
 		return strdup(("for [" + std::to_string(from) + "->" + std::to_string(to) + "]").c_str());
+	}
+	void report_error(int line, const char *msg) {
+		printf("<Error> found in Line %d: %s\n", line, msg);
+	}
+	void report_error_redeclared_var(int line, const char *var_name) {
+		std::string err = "symble '" + std::string(var_name) + "' redeclared";
+		report_error(line, err.c_str());
 	}
 }

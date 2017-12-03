@@ -30,6 +30,9 @@ begin
         var lg: string;
         var L1darray: array 1 to 5 of integer;                  // one dimensional
         var L2darray: array 1 to 5 of array 1 to 3 of integer;  // two dimensional
+
+		var lg: integer;
+        var lg: real;
         for k := 10 to 20 do
 		   print k*3;
 		   print "\n";

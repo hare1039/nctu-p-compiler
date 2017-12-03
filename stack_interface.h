@@ -3,6 +3,8 @@
 
 #ifdef __cplusplus
     #include <cstring>
+    #include <cstdio>
+    using std::printf;
     #define extc extern "C"
 #else
     #include <string.h>
@@ -90,9 +92,10 @@ extc table_ptr       table_stack_top (table_stack_ptr);
 extc table_ptr       table_stack_pop (table_stack_ptr);
 extc int             table_stack_size(table_stack_ptr);
 
-// some extra function
+// some extra functions
 extc char *          newstringconcat(const char *, const char *);
 extc char *          new_for_varrange(int from, int to);
-
+extc void            report_error(int line, const char *msg);
+extc void            report_error_redeclared_var(int line, const char *var_name);
 
 #endif//__STACK_INTERFACE__

@@ -17,6 +17,7 @@ vec_string_ptr id_list = NULL;
 union attr empty_attr;
 array_object_ptr array_construct = NULL;
 
+int for_error = 0;
 %}
 
 %code requires {
@@ -178,7 +179,7 @@ varible_declare_pod             : VAR identifier_list ':' TYPE ';'
                                         int err = table_push(table, p);
                                         if(err)
 										{
-										    printf("## [ERROR] redeclared var: %s\n", entry_get_name(p));
+										    report_error_redeclared_var(linenum, entry_get_name(p));
 										    delete_entry(p);
 										}
                                     }
@@ -392,13 +393,14 @@ for								: FOR identifier ASSIGN int_constant TO int_constant DO {
                                     int err = table_push(table, p);
                                     if(err)
 									{
-									    printf("## [ERROR] for iter: '%s' already declared\n", entry_get_name(p));
+									    report_error_redeclared_var(linenum, entry_get_name(p));
 									    delete_entry(p);
+                                        for_error++;
 									}
 								} statements END DO {
-table_print(table_stack_top(stack_table));
-									table_remove(table_stack_top(stack_table), $2);
-table_print(table_stack_top(stack_table));
+									table_print(table_stack_top(stack_table));
+									if(for_error == 0)
+									    table_remove(table_stack_top(stack_table), $2);
                                 }
                                 ;
 
