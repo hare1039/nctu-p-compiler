@@ -15,7 +15,6 @@ int yyerror(char *);
 table_stack_ptr stack_table = NULL;
 union attr empty_attr;
 array_object_ptr array_construct = NULL;
-
 int for_error = 0;
 %}
 
@@ -236,9 +235,11 @@ array_types						: ARRAY int_constant TO int_constant OF array_types {
 									    array_object_ptr p = new_array_object($6, $4 - $2);
                                         array_construct = array_object_append(p, array_construct);
 									}
+                                    free($6);
+                                    $$ = array_object_show(array_construct);
                                 }
                                 | TYPE {
- 								    $$ = $1;
+								    $$ = $1;
  								}
                                 ;
 
@@ -314,7 +315,7 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
                                     $$ = newstringconcat($$, ", ");
                                     free(ptr);
                                     char * ptr2 = $$;
-									printf("'%s'\n", $5);
+									
                                     $$ = newstringconcat($$, $5);
 									free(ptr2);
                                     if(array_construct)
