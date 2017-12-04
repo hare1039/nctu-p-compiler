@@ -291,7 +291,7 @@ function						: function_name '(' arguments ')' ':' array_types ';' {
 															table_get_level(table),
 															"void",
 															empty_attr,
-															$3);								    
+															"");								    
 									table_push(table, p);
                                 } function_body END identifier
                                 ;

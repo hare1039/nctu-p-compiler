@@ -173,7 +173,7 @@ extern "C"
 		printf("<Error> found in Line %d: %s\n", line, msg);
 	}
 	void report_error_redeclared_var(int line, const char *var_name) {
-		std::string err = "symble '" + to_32chars(std::string(var_name)) + "' redeclared";
+		std::string err = "symble " + to_32chars(std::string(var_name)) + " is redeclared";
 		report_error(line, err.c_str());
 	}
 }

@@ -29,7 +29,7 @@ std::string Const_type::get_attrbute_string()
 	else if(this->type == "real")
 		return std::to_string(real_val);
 	else if(this->type == "boolean")
-		return (this->bool_val)? "TRUE": "FALSE";
+		return (this->bool_val)? "true": "false";
 	else if(this->type == "string")
 		return string_val;
 	else
@@ -93,7 +93,9 @@ void Table::show()
 					             ((entry->attribute.val != 0)?
 								     std::to_string(entry->attribute.val).c_str():
 								     std::string().c_str()):
-					          entry->attribute_data.c_str());
+					             (entry->type == "string")?
+					                 ("\"" + entry->attribute_data + "\"").c_str():
+		                    		  entry->attribute_data.c_str());
 		std::printf("\n");				
 	}
 	for(int i(0); i < 110; i++)
@@ -118,7 +120,7 @@ Array_object::~Array_object() {
 }
 std::string Array_object::show()
 {
-    return this->deepest_type() + show_cap();
+    return this->deepest_type() + " " + show_cap();
 }
 
 std::string Array_object::show_cap()
