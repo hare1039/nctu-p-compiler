@@ -72,6 +72,7 @@ extc enum kind_list entry_get_kind  (entry_ptr);
 extc int            entry_get_level (entry_ptr);
 extc const char*    entry_get_type  (entry_ptr);
 extc union attr     entry_get_attribute (entry_ptr);
+extc void           entry_set_level(entry_ptr, int);
 
 extc table_ptr   new_table(int);
 extc void        delete_table(table_ptr);

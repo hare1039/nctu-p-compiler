@@ -70,12 +70,14 @@ int for_error = 0;
 						
 %%
 
-program							: programname ';' programbody END programname
+program							: programname ';' programbody
 								{
 	                                entry_ptr entry = new_entry($1, K_PROGRAM, /* level */ 0, "void", empty_attr, "");
 									table_ptr table = table_stack_top(stack_table);
 									table_push(table, entry);
-                				}
+                				} END programname {
+	                                table_print(table_stack_top(stack_table));
+                                }
 
 programname						: identifier {
 								    $$ = $1;
@@ -317,14 +319,6 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
 
 									for(int i = 0; i < vec_string_size($1); i++)
 									{
-                                        //  $$ = ", " + arr; in c++
-									    char * ptr  = $$;
-                                        $$ = newstringconcat($$, ", ");
-									    free(ptr);
-										char * ptr2 = $$;
-										$$ = newstringconcat($$, arr);
-                                        free(ptr2);
-
 										entry_ptr p = new_entry(vec_string_at($1, i),
 																K_PARAMETER,
 															    0,
@@ -332,6 +326,16 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
 															    empty_attr,
 															    "");
                                         table_push(parameter_table, p);
+										if(i >= 1)
+                         				{
+	                                        //  $$ = ", " + arr; in c++
+										    char * ptr  = $$;
+	                                        $$ = newstringconcat($$, ", ");
+										    free(ptr);
+											char * ptr2 = $$;
+											$$ = newstringconcat($$, arr);
+	                                        free(ptr2);
+                                        }
 									}
 									char * ptr  = $$;
                                     $$ = newstringconcat($$, ", ");
@@ -357,12 +361,6 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
                                     $$ = newstringconcat("", "");
 									for(int i = 0; i < vec_string_size($1); i++)
 									{
-									    char * ptr  = $$;
-                                        $$ = newstringconcat($$, ", ");
-									    free(ptr);
-										char * ptr2 = $$;
-										$$ = newstringconcat($$, arr);
-                                        free(ptr2);
 										entry_ptr p = new_entry(vec_string_at($1, i),
 																K_PARAMETER,
 															    0,
@@ -370,6 +368,15 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
 															    empty_attr,
 															    "");
                                         table_push(parameter_table, p);
+                                        if(i >= 1)
+				                        {
+									    	char * ptr  = $$;
+                                        	$$ = newstringconcat($$, ", ");
+									    	free(ptr);
+											char * ptr2 = $$;
+											$$ = newstringconcat($$, arr);
+                                        	free(ptr2);
+                                        }
 									}
 									char * ptr = $$;
                                     $$ = newstringconcat($$, arr);
@@ -563,7 +570,6 @@ int  main( int argc, char **argv )
 
 	yyparse();
 
-	table_print(table_stack_top(stack_table));
 	table_stack_pop(stack_table);
 	delete_table_stack(stack_table);
 	
