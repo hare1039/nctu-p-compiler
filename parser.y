@@ -283,11 +283,17 @@ function						: function_name '(' arguments ')' ':' array_types ';' {
 															$3);								    
 									table_push(table, p);
 								} function_body END identifier {
-//									table_ptr p = table_stack_pop(stack_table);
-//									table_print(p);
-//									delete_table(p);
                                 }
-                                | function_name '(' arguments ')' ';' function_body END identifier
+                                | function_name '(' arguments ')' ';' {
+                                    table_ptr table = table_stack_top(stack_table);
+                                    entry_ptr p = new_entry($1,
+															K_FUNCTION,
+															table_get_level(table),
+															"void",
+															empty_attr,
+															$3);								    
+									table_push(table, p);
+                                } function_body END identifier
                                 ;
 
 function_body					: compound
@@ -403,9 +409,14 @@ compound						: KWBEGIN {
                                     table_ptr new_p = new_table(table_stack_size(stack_table));
 									if(parameter_table != NULL)
 									{
-										entry_ptr p = NULL;
-									    while ( p = table_pop(parameter_table))
-									        table_push(new_p, p);
+										entry_ptr p = table_pop(parameter_table);
+									    while (p)
+										{
+											entry_set_level(p, table_get_level(new_p));
+										    table_push(new_p, p);
+											p = table_pop(parameter_table);
+										}
+									        
 									    delete_table(parameter_table);
 									    parameter_table = NULL;
 									}

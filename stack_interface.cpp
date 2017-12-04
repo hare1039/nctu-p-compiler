@@ -76,6 +76,9 @@ extern "C"
 	void delete_entry(entry_ptr e) {
 		delete e;
 	}
+	void entry_set_level(entry_ptr e, int l) {
+		e->level = l;
+	}
 	const char * entry_get_name (entry_ptr e) {
 		return e->name.c_str();
 	}
