@@ -219,11 +219,9 @@ void set_pseudo_comment( const char *text )
             Opt_D = 1;
         else if( text[4] == '-' )
             Opt_D = 0;
-		printf("'Opt_D:%d'\n", Opt_D);
         break;
 	 default:
 	 	break;
 	}
-
 }
 

@@ -22,10 +22,10 @@ var isPass: true;
 func( a:integer; b, q :real; c: boolean; ffd: array 1 to 100 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of array 5 to 10 of boolean): boolean;
 begin
    var x: "hello world";
-//   begin
-//	  var y	: real;
-//	  return 1 > 2;
-//   end
+   begin
+	  var aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbb: real;
+	  return 1 > 2;
+   end
 end
 end func
 

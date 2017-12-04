@@ -47,6 +47,7 @@ struct Table
 	Entry* get_entry(std::string && name);
 	void show();
 	void remove(std::string && name);
+	void link(Table * src);
 	Table(int l): level(l){}
 	~Table();
 };

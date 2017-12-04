@@ -13,6 +13,7 @@ extern int   yylex(void);
 int yyerror(char *);
 
 table_stack_ptr stack_table = NULL;
+table_ptr parameter_table = NULL;
 union attr empty_attr;
 array_object_ptr array_construct = NULL;
 int for_error = 0;
@@ -157,9 +158,8 @@ number							: INT {
 /* varible list */
 varible_list					: /* empty */
                                 | varible_list_ext {
-                                if(Opt_D)
-								    table_print(table_stack_top(stack_table));
-								}
+//    							    table_print(table_stack_top(stack_table));
+                                }
                                 ;
 
 varible_list_ext				: varible_list_ext varible_declare
@@ -197,11 +197,11 @@ varible_declare_pod             : VAR identifier_list ':' TYPE ';'
 varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO int_constant OF array_types ';' {
                                     if(! array_construct)
 									{
-									    array_construct = new_array_object($9, $7 - $5);
+									    array_construct = new_array_object($9, $7 - $5 + 1);
 									}
                                     else
 									{
-									    array_object_ptr p = new_array_object("", $7 - $5);
+									    array_object_ptr p = new_array_object("", $7 - $5 + 1);
                                         array_construct = array_object_append(p, array_construct);
 									}
                                     table_ptr  table = table_stack_top(stack_table);
@@ -228,11 +228,11 @@ varible_declare_array           : VAR identifier_list ':' ARRAY int_constant TO 
 array_types						: ARRAY int_constant TO int_constant OF array_types {
                                     if(! array_construct)
 									{
-									    array_construct = new_array_object($6, $4 - $2);
+									    array_construct = new_array_object($6, $4 - $2 + 1);
 									}
                                     else
 									{
-									    array_object_ptr p = new_array_object($6, $4 - $2);
+									    array_object_ptr p = new_array_object($6, $4 - $2 + 1);
                                         array_construct = array_object_append(p, array_construct);
 									}
                                     free($6);
@@ -273,16 +273,20 @@ function_list_ext				: function function_list_ext
                                 | function
                                 ;
 
-function						: function_name '(' arguments ')' ':' TYPE ';' function_body END identifier {
-									table_ptr table = table_stack_top(stack_table);
-									entry_ptr p = new_entry($1,
+function						: function_name '(' arguments ')' ':' array_types ';' {
+                                    table_ptr table = table_stack_top(stack_table);
+                                    entry_ptr p = new_entry($1,
 															K_FUNCTION,
 															table_get_level(table),
 															$6,
 															empty_attr,
-															$3);
+															$3);								    
 									table_push(table, p);
-								}
+								} function_body END identifier {
+//									table_ptr p = table_stack_pop(stack_table);
+//									table_print(p);
+//									delete_table(p);
+                                }
                                 | function_name '(' arguments ')' ';' function_body END identifier
                                 ;
 
@@ -292,16 +296,20 @@ function_body					: compound
 function_name					: identifier
                                 ;
 
-arguments						: /* empty */   { $$ = "void"; }
+arguments						: /* empty */   {
+                                    $$ = "void";
+                                }
                                 | arguments_ext { $$ = $1; }
                                 ;
 
 arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
 									char * arr = (array_construct)? array_object_show(array_construct): $3;
-                                    $$ = newstringconcat("", arr); 
-									
-									int i;
-									for(i = 1; i < vec_string_size($1); i++)
+                                    $$ = newstringconcat("", arr);
+									if(parameter_table == NULL)
+										parameter_table = new_table(0);
+								    
+
+									for(int i = 0; i < vec_string_size($1); i++)
 									{
                                         //  $$ = ", " + arr; in c++
 									    char * ptr  = $$;
@@ -310,6 +318,14 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
 										char * ptr2 = $$;
 										$$ = newstringconcat($$, arr);
                                         free(ptr2);
+
+										entry_ptr p = new_entry(vec_string_at($1, i),
+																K_PARAMETER,
+															    0,
+															    $3,
+															    empty_attr,
+															    "");
+                                        table_push(parameter_table, p);
 									}
 									char * ptr  = $$;
                                     $$ = newstringconcat($$, ", ");
@@ -328,10 +344,12 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
                                     delete_vec_string($1);
 								}
                                 | identifier_list ':' array_types {
+	                                if(parameter_table == NULL)
+										parameter_table = new_table(0);
+								    
 									char * arr = (array_construct)? array_object_show(array_construct): $3;
                                     $$ = newstringconcat("", "");
-									int i;
-									for(i = 1; i < vec_string_size($1); i++)
+									for(int i = 0; i < vec_string_size($1); i++)
 									{
 									    char * ptr  = $$;
                                         $$ = newstringconcat($$, ", ");
@@ -339,6 +357,13 @@ arguments_ext					: identifier_list ':' array_types ';' arguments_ext {
 										char * ptr2 = $$;
 										$$ = newstringconcat($$, arr);
                                         free(ptr2);
+										entry_ptr p = new_entry(vec_string_at($1, i),
+																K_PARAMETER,
+															    0,
+															    $3,
+															    empty_attr,
+															    "");
+                                        table_push(parameter_table, p);
 									}
 									char * ptr = $$;
                                     $$ = newstringconcat($$, arr);
@@ -375,11 +400,20 @@ statement						: compound
 
 /* compound statements */
 compound						: KWBEGIN {
-                                    table_ptr p = new_table(table_stack_size(stack_table));
-                                    table_stack_push(stack_table, p);
+                                    table_ptr new_p = new_table(table_stack_size(stack_table));
+									if(parameter_table != NULL)
+									{
+										entry_ptr p = NULL;
+									    while ( p = table_pop(parameter_table))
+									        table_push(new_p, p);
+									    delete_table(parameter_table);
+									    parameter_table = NULL;
+									}
+                                    table_stack_push(stack_table, new_p);
                                 }
                                 varible_list statements END {
                                     table_ptr p = table_stack_pop(stack_table);
+                                    table_print(p);
                                     delete_table(p);
                                 }
                                 ;
@@ -522,10 +556,6 @@ int  main( int argc, char **argv )
 	table_stack_pop(stack_table);
 	delete_table_stack(stack_table);
 	
-	fprintf( stdout, "\n" );
-	fprintf( stdout, "|--------------------------------|\n" );
-	fprintf( stdout, "|  There is no syntactic error!  |\n" );
-	fprintf( stdout, "|--------------------------------|\n" );
 	fclose(fp);
 	exit(0);
 }

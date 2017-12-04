@@ -1,5 +1,7 @@
 #include "stlstack.hpp"
 
+extern int Opt_D;
+
 double Const_type::to_double(std::string && sci)
 {
 	std::transform(sci.begin(), sci.end(), sci.begin(), ::tolower);
@@ -71,6 +73,9 @@ Table::~Table() {
 
 void Table::show()
 {
+	if(not Opt_D)
+		return;
+//	std::printf("<< %d >>\n", this->level);
     for(int i(0); i < 110; i++)
 		std::printf("=");
 	std::printf("\n");

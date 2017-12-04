@@ -35,6 +35,13 @@ test:
 	mv 0413220.zip test_files; \
 	cd test_files; \
 	./test.sh; \
+	echo ---- diff start ----; \
+	diff -Z -r ExAns 0413220/ans; \
+	echo ---- diff end ------;
+
+.PHONY: test-clean
+test-clean:
+	cd test_files;\
 	rm -r 0413220.zip 0413220/
 
 .PHONY: test2

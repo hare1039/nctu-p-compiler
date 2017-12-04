@@ -1,6 +1,10 @@
 #include "stack_interface.h"
 #include "stlstack.hpp"
 
+std::string to_32chars(std::string s) {
+	return s.size() >= 32 ? s.substr(0, 32): s;
+}
+
 extern "C"
 {
     const_type_ptr new_const_type() { return new Const_type; }
@@ -61,7 +65,7 @@ extern "C"
 	entry_ptr new_entry (const char * n, kind_list k, int l, const char * t, union attr a, const char * attr_data)
 	{
 		return new Entry {
-			.name  = std::string(n),
+			.name  = to_32chars(std::string(n)),
 			.kind  = k,
 			.level = l,
 			.type  = std::string(t),
@@ -96,7 +100,7 @@ extern "C"
 		delete p;
 	}
 	int table_push(table_ptr t, entry_ptr ent) {
-		if (t->contains(std::string(ent->name)))
+		if (t->contains(to_32chars(std::string(ent->name))))
 			return 1;
 		t->data.push_back(ent);
 		return 0;
@@ -106,6 +110,8 @@ extern "C"
 	}
 	entry_ptr table_pop (table_ptr t)
 	{
+		if(t->data.empty())
+			return NULL;
 		entry_ptr p = t->data.back();
 		t->data.pop_back();
 		return p;
@@ -126,7 +132,7 @@ extern "C"
 		t->show();
 	}
 	void table_remove(table_ptr t, const char * name) {
-		t->remove(std::string(name));
+		t->remove(to_32chars(std::string(name)));
 	}
 
 
@@ -152,8 +158,7 @@ extern "C"
 		return ts->tables.size();
 	}
 
-
-    // some extra functions
+// some extra functions
     char * newstringconcat(const char * a, const char * b) {
 		return strdup((std::string(a) + std::string(b)).c_str());
 	}
@@ -165,7 +170,7 @@ extern "C"
 		printf("<Error> found in Line %d: %s\n", line, msg);
 	}
 	void report_error_redeclared_var(int line, const char *var_name) {
-		std::string err = "symble '" + std::string(var_name) + "' redeclared";
+		std::string err = "symble '" + to_32chars(std::string(var_name)) + "' redeclared";
 		report_error(line, err.c_str());
 	}
 }
