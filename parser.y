@@ -479,10 +479,11 @@ expression						: '-' expression %prec NEG
                                 | expression MOD expression %prec '*'
                                 | '(' expression ')' %prec PARENTHESES
                                 | number
-                                | identifier
                                 | function_invocation
                                 | STRING
                                 | array_reference
+                         		| bool_expression
+                        		| integer_expression
                                 ;
 
 integer_expression				: int_constant
@@ -499,8 +500,6 @@ bool_expression					: expression '>' expression
                                 | expression OR  expression %prec OR
                                 | NOT expression %prec NOT
                                 | bool_constant
-                                | identifier
-                                | function_invocation
                                 ;
 
 function_invocation				: identifier '(' expression_list ')'
