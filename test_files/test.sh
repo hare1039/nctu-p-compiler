@@ -6,6 +6,7 @@ for zip in *.zip;do
 	make
 	mkdir ans
 	for filename in ../*.p; do
-		./parser $filename 1> ans/r${filename##*/} 2>&1
+		./parser $filename 1> ans/${filename##*/} 2>&1
+		#./parser $filename
 	done
 done

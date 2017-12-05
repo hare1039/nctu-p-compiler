@@ -6,7 +6,7 @@
 %{
 #include <string.h>
 #include "y.tab.h"
-
+#include "stack_interface.h"
 
 #define LIST strcat( buf, yytext )
 #define token(t)				{ LIST; if (Opt_T) printf("<%s>\n", #t );}
@@ -22,6 +22,7 @@
 
 int  Opt_S   = 1;				  /* list source code option */
 int  Opt_T   = 1;				  /* list token option */
+int  Opt_D   = 1;
 int  linenum = 1;    			  /* line number */
 char buf[MAX_LINE_LENG];		  /* source code line buffer */
 char str_content[MAX_LINE_LENG];  /* string buffer */
@@ -47,46 +48,46 @@ identifier ({letter})({letter}|{digit})*
 
 %%
 
-","			 { tokenChar(',');  return ',';}
-";"			 { tokenChar(';');  return ';';}
-":"			 { tokenChar(':');  return ':';}
-")"			 { tokenChar(')');  return ')';}
-"("			 { tokenChar('(');  return '(';}
-"["			 { tokenChar('[');  return '[';}
-"]"			 { tokenChar(']');  return ']';}
+","			 { tokenChar(','); yylval.string_ = strdup(yytext); return ',';}
+";"			 { tokenChar(';'); yylval.string_ = strdup(yytext); return ';';}
+":"			 { tokenChar(':'); yylval.string_ = strdup(yytext); return ':';}
+")"			 { tokenChar(')'); yylval.string_ = strdup(yytext); return ')';}
+"("			 { tokenChar('('); yylval.string_ = strdup(yytext); return '(';}
+"["			 { tokenChar('['); yylval.string_ = strdup(yytext); return '[';}
+"]"			 { tokenChar(']'); yylval.string_ = strdup(yytext); return ']';}
+			 				   
+"+"			 { tokenChar('+'); yylval.string_ = strdup(yytext);	return '+';}
+"-"			 { tokenChar('-'); yylval.string_ = strdup(yytext);	return '-';}
+"*"			 { tokenChar('*'); yylval.string_ = strdup(yytext);	return '*';}
+"/"			 { tokenChar('/'); yylval.string_ = strdup(yytext);	return '/';}
+"mod"		 { token(mod);     yylval.string_ = strdup(yytext); return MOD;}
+":="		 { token(:=);      yylval.string_ = strdup(yytext);	return ASSIGN;}
+"<"			 { tokenChar('<'); yylval.string_ = strdup(yytext);	return '<'; }
+"<="		 { token(<=);      yylval.string_ = strdup(yytext);	return LE; }
+"<>"		 { token(<>);      yylval.string_ = strdup(yytext);	return NE;}
+">="		 { token(>=);      yylval.string_ = strdup(yytext);	return GE;}
+">"			 { tokenChar('>'); yylval.string_ = strdup(yytext);	return '>';}
+"="			 { tokenChar('='); yylval.string_ = strdup(yytext);	return '=';}
+"and"		 { token(and);     yylval.string_ = strdup(yytext);	return AND;}
+"or"		 { token(or);      yylval.string_ = strdup(yytext);	return OR;}
+"not"		 { token(not);     yylval.string_ = strdup(yytext);	return NOT;}
 			 
-"+"			 { tokenChar('+');	return '+';}
-"-"			 { tokenChar('-');	return '-';}
-"*"			 { tokenChar('*');	return '*';}
-"/"			 { tokenChar('/');	return '/';}
-"mod"		 { token(mod);		return MOD;}
-":="		 { token(:=);		return ASSIGN;}
-"<"			 { tokenChar('<');	return '<'; }
-"<="		 { token(<=);		return LE; }
-"<>"		 { token(<>);		return NE;}
-">="		 { token(>=);		return GE;}
-">"			 { tokenChar('>');	return '>';}
-"="			 { tokenChar('=');	return '=';}
-"and"		 { token(and);		return AND;}
-"or"		 { token(or);		return OR;}
-"not"		 { token(not);		return NOT;}
-			 
+"boolean"	 { token(KWboolean); yylval.string_ = strdup("boolean"); return TYPE;}
+"integer"	 { token(KWinteger); yylval.string_ = strdup("integer"); return TYPE;}
+"real"		 { token(KWreal);	 yylval.string_ = strdup("real");    return TYPE;}
+"string"	 { token(KWstring);	 yylval.string_ = strdup("string");  return TYPE;}
 "array"		 { token(KWarray);	return ARRAY;}
 "begin"		 { token(KWbegin);	return KWBEGIN;}
-"boolean"	 { token(KWboolean); return TYPE;}
-"def"		 { token(KWdef);}
+"def"		 { token(KWdef);    return DEF;}
 "do"		 { token(KWdo);		return DO;}
 "else"		 { token(KWelse);	return ELSE;}
 "end"		 { token(KWend);	return END;}
 "false"		 { token(KWfalse);	return FALSE;}
 "for"		 { token(KWfor);	return FOR;}
-"integer"	 { token(KWinteger);return TYPE;}
 "if"		 { token(KWif);		return IF;}
 "of"		 { token(KWof);		return OF;}
 "print"		 { token(KWprint);	return PRINT;}
 "read"		 { token(KWread);	return READ;}
-"real"		 { token(KWreal);	return TYPE;}
-"string"	 { token(KWstring);	return TYPE;}
 "then"		 { token(KWthen);	return THEN;}
 "to"		 { token(KWto);		return TO;}
 "true"		 { token(KWtrue);	return TRUE;}
@@ -94,11 +95,11 @@ identifier ({letter})({letter}|{digit})*
 "var"		 { token(KWvar);	return VAR;}
 "while"		 { token(KWwhile);	return WHILE;}
 
-{octal}      { tokenOctInteger("oct_integer", yytext);	return INT;}
-{identifier} { tokenString    ("id", yytext);			return IDENT;}
-{integer}	 { tokenInteger   ("integer", atoi(yytext));return INT;}
-{float}		 { tokenFloat     ("float", yytext);		return FLOAT;}
-{scientific} { tokenScientific("scientific", yytext);	return SCI;}
+{octal}      { sscanf(yytext, "%o", &yylval.integer_); tokenOctInteger("oct_integer", yytext);	return INT;}
+{identifier} { yylval.string_     = strdup(yytext)   ; tokenString    ("id", yytext);			return IDENT;}
+{integer}	 { sscanf(yytext, "%d", &yylval.integer_); tokenInteger   ("integer", atoi(yytext));return INT;}
+{float}		 { sscanf(yytext, "%f", &yylval.float_)  ; tokenFloat     ("float", yytext);		return FLOAT;}
+{scientific} { yylval.string_     = strdup(yytext)   ; tokenScientific("scientific", yytext);	return SCI;}
 
 "\""				{ /* begin string  */
 				  LIST;
@@ -125,6 +126,7 @@ identifier ({letter})({letter}|{digit})*
 					strcat(buf,"\"");
 					if (Opt_T)
 						printf("<%s: %s>\n", "string", str_content );
+                    yylval.string_ = strdup(str_content);
 					str_content[0] = '\0';
 				  	BEGIN INITIAL;
 					return STRING;
@@ -196,27 +198,6 @@ identifier ({letter})({letter}|{digit})*
 				}
 
 %%
-/*
-int  main( int argc, char **argv )
-{
-	if( argc != 2 ) {
-		fprintf(  stdout,  "Usage:  ./scanner  [filename]\n"  );
-		exit(0);
-	}
-
-	FILE *fp = fopen( argv[1], "r" );
-
-	if( fp == NULL )  {
-		fprintf( stdout, "Open  file  error\n" );
-		exit(-1);
-	}
-
-	yyin = fp;
-	yylex();
-	exit(0);
-}
-*/
-
 void set_pseudo_comment( const char *text )
 {
 	/* format : //&[A-Z][+-] */
@@ -233,9 +214,14 @@ void set_pseudo_comment( const char *text )
 		else if( text[4] == '-' )
 			Opt_T = 0;
 	 	break;
+	 case 'D':
+        if( text[4] == '+' )
+            Opt_D = 1;
+        else if( text[4] == '-' )
+            Opt_D = 0;
+        break;
 	 default:
 	 	break;
 	}
-
 }
 
