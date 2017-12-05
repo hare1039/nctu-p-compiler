@@ -1,8 +1,8 @@
-* NCTU 0413220 hw1-report
+* NCTU 0413220 hw3-report
   A small p-language compiler
   1. scanner
   2. parser
-
+  3. semantics analyze part 1: var indentifier
 * Platform & dependency:
 ** dependency
   - make
