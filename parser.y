@@ -14,9 +14,9 @@ int yyerror(char *);
 
 table_stack_ptr stack_table = NULL;
 table_ptr parameter_table = NULL;
+vec_string_ptr for_var_names = NULL;
 union attr empty_attr;
 array_object_ptr array_construct = NULL;
-int for_error = 0;
 %}
 
 %code requires {
@@ -418,6 +418,7 @@ compound						: KWBEGIN {
 									{
 										entry_ptr p = table_pop(parameter_table);
 									    while (p)
+
 										{
 											entry_set_level(p, table_get_level(new_p));
 										    table_push(new_p, p);
@@ -426,6 +427,19 @@ compound						: KWBEGIN {
 									        
 									    delete_table(parameter_table);
 									    parameter_table = NULL;
+									}
+									if(for_var_names != NULL)
+									{
+									    for(int i = 0; i < vec_string_size(for_var_names); i++)
+										{
+									        entry_ptr p = new_entry(vec_string_at(for_var_names, i),
+									                                K_VARIABLE,
+									                                table_get_level(table_stack_top(stack_table)),
+									                                "integer",
+									                                empty_attr,
+									                                "");
+									        table_push(new_p, p);
+									    }
 									}
                                     table_stack_push(stack_table, new_p);
                                 }
@@ -468,6 +482,7 @@ expression						: '-' expression %prec NEG
                                 | identifier
                                 | function_invocation
                                 | STRING
+                                | array_reference
                                 ;
 
 integer_expression				: int_constant
@@ -508,25 +523,22 @@ while							: WHILE bool_expression DO statements END DO
 for								: FOR identifier ASSIGN int_constant TO int_constant DO {
 								    table_ptr table = table_stack_top(stack_table);
 								    char * s = new_for_varrange($4, $6);
-								    
-								    entry_ptr p = new_entry($2,
-                                                            K_VARIABLE,
-                                                            table_get_level(table_stack_top(stack_table)),
-                                                            "integer",
-                                                            empty_attr,
-                                                            s);
-                                    free(s);
-                                    int err = table_push(table, p);
-                                    if(err)
+								    entry_ptr new_original  = new_entry($2,
+                                                                        K_VARIABLE,
+                                                                        table_get_level(table_stack_top(stack_table)),
+                                                                        "integer",
+                                                                        empty_attr,
+                                                                        "");
+									free(s);
+									if(vec_string_includes_str(for_var_names, $2))
 									{
-									    report_error_redeclared_var(linenum, entry_get_name(p));
-									    delete_entry(p);
-                                        for_error++;
-									}
+									    report_error_redeclared_var(linenum, $2);
+                                    }
+									else
+										vec_string_push_back(for_var_names, $2);
 								} statements END DO {
-//									table_print(table_stack_top(stack_table));
-									if(for_error == 0)
-									    table_remove(table_stack_top(stack_table), $2);
+									table_remove(table_stack_top(stack_table), $2);
+									vec_string_pop(for_var_names);
                                 }
                                 ;
 
@@ -567,9 +579,11 @@ int  main( int argc, char **argv )
 	stack_table = new_table_stack();
 	table_ptr t = new_table(0);
 	table_stack_push(stack_table, t);
+	for_var_names = new_vec_string();
 
 	yyparse();
 
+	delete_vec_string(for_var_names);
 	table_stack_pop(stack_table);
 	delete_table_stack(stack_table);
 	

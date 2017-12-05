@@ -59,6 +59,8 @@ extc void           vec_string_push_back(vec_string_ptr, const char *);
 extc void           vec_string_clear(vec_string_ptr);
 extc const char *   vec_string_at(vec_string_ptr, int);
 extc int            vec_string_size(vec_string_ptr);
+extc int            vec_string_includes_str(vec_string_ptr, const char *);
+extc void           vec_string_pop(vec_string_ptr);
 
 extc entry_ptr      new_entry (const char * name,
 							   enum kind_list kind,
@@ -75,6 +77,7 @@ extc union attr     entry_get_attribute (entry_ptr);
 extc void           entry_set_level(entry_ptr, int);
 
 extc table_ptr   new_table(int);
+extc table_ptr   new_table_copy_from(table_ptr);
 extc void        delete_table(table_ptr);
 extc int         table_push(table_ptr, entry_ptr);
 extc entry_ptr   table_top (table_ptr);

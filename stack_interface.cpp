@@ -61,7 +61,24 @@ extern "C"
 	int vec_string_size(vec_string_ptr p) {
 		return static_cast<int>(p->data.size());
 	}
+	int vec_string_includes_str(vec_string_ptr p, const char * target) {
+		for(auto &s: p->data)
+			if(s == std::string(target))
+				return 1;
+		return 0;
+	}
+	void vec_string_pop(vec_string_ptr p) {
+	    if(not p->data.empty())
+			p->data.pop_back();
+	}
+	void vec_string_remove_str(vec_string_ptr p, const char * target) {
+		for(auto iter(p->data.begin()); iter != p->data.end(); ++iter) {
+			if((*iter) == std::string(target))
+				p->data.erase(iter);
+		}
+	}
 
+	
 	entry_ptr new_entry (const char * n, kind_list k, int l, const char * t, union attr a, const char * attr_data)
 	{
 		return new Entry {
