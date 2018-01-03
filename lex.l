@@ -2,6 +2,7 @@
  * Introduction to Compiler Design by Prof. Yi Ping You
  * Project 2 Lex Sample
  */
+%option noyywrap
 
 %{
 
@@ -35,10 +36,9 @@ extern int Opt_D;
 whitespace [ \t]+
 letter [A-Za-z]
 digit [0-9]
-integer 0|[1-9][0-9]*
-octal 0[0-7]+
-fraction 0|[0-9]*[1-9]
-float {integer}"."{fraction}
+octal 0[0-7]*
+integer {digit}+
+float {integer}"."{integer}
 scientific ({integer}|{float}|{octal})[Ee][+-]?({integer}|{octal})
 identifier ({letter})({letter}|{digit})*
 
@@ -106,15 +106,15 @@ identifier ({letter})({letter}|{digit})*
 				//  yylval.lexeme = strdup(yytext); /* pass ID to parser */
 				  return ID; 
 				}
-{integer}			{ 
-				  tokenInteger("integer",atoi(yytext)); 
-				  yylval.intVal = atoi(yytext);
-				  return INT_CONST; 
-				}
 {octal}         {
 				  tokenOctInteger("oct_integer",yytext);
 				  yylval.intVal = (int)strtol(yytext, NULL, 8);
 				  return INT_CONST;  // FIXME maybe use another token
+				}
+{integer}			{ 
+				  tokenInteger("integer",atoi(yytext)); 
+				  yylval.intVal = atoi(yytext);
+				  return INT_CONST; 
 				}
 {float}				{ 
 				  tokenFloat("float",atof(yytext)); 
@@ -204,6 +204,12 @@ identifier ({letter})({letter}|{digit})*
 				  linenum++;
 				  memset( buf, 0, MAX_LINE_LENG );
 		   		}
+
+<<EOF>>			{
+				  if  (Opt_S && buf[0])
+				  	printf("%d: %s",  linenum,  buf);
+				  return 0;
+}
 
 .				{
 				  /* error */

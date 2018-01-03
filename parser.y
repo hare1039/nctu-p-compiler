@@ -11,29 +11,21 @@
 #include "symtab.h"
 #include "semcheck.h"
 
-//#include "test.h"
-
 int yydebug;
 
-extern int linenum;		/* declared in lex.l */
-extern FILE *yyin;		/* declared by lex */
-extern char *yytext;		/* declared by lex */
-extern char buf[256];		/* declared in lex.l */
+extern int linenum;     /* declared in lex.l */
+extern FILE *yyin;      /* declared by lex */
+extern char *yytext;    /* declared by lex */
+extern char buf[256];   /* declared in lex.l */
 extern int yylex(void);
-int yyerror(char* );
+int yyerror(char*);
 
 int scope = 0;
-
-int Opt_D = 1;			/* symbol table dump option */
-char fileName[256];
-
-
+int Opt_D = 1;                  // symbol table dump option
+char fileName[256];             // filename of input file
 struct SymTable *symbolTable;	// main symbol table
-
 __BOOLEAN paramError;			// indicate is parameter have any error?
-
-struct PType *funcReturn;		// record function's return type, used at 'return statement' production rule
-
+struct PType *funcReturn;		// record return type of function, used at 'return statement' production rule
 %}
 
 %union {
@@ -75,14 +67,24 @@ struct PType *funcReturn;		// record function's return type, used at 'return sta
 
 program			: ID
 			{
-			  struct PType *pType = createPType( VOID_t );
-			  struct SymNode *newNode = createProgramNode( $1, scope, pType );
-			  insertTab( symbolTable, newNode );
+			  struct PType *pType = createPType (VOID_t);
+			  struct SymNode *newNode = createProgramNode ($1, scope, pType);
+			  insertTab (symbolTable, newNode);
+
+			  if (strcmp(fileName, $1)) {
+				fprintf (stdout, "<Error> found in Line %d: program beginning ID inconsist with file name\n", linenum);
+			  }
 			}
-			  MK_SEMICOLON 
+			  MK_SEMICOLON
 			  program_body
 			  END ID
 			{
+			  if (strcmp($1, $6)) {
+                  fprintf (stdout, "<Error> found in Line %d: program end ID inconsist with the beginning ID\n", linenum);
+              }
+			  if (strcmp(fileName, $6)) {
+				  fprintf (stdout, "<Error> found in Line %d: program end ID inconsist with file name\n", linenum);
+			  }
 			  // dump symbol table
 			  if( Opt_D == 1 )
 				printSymTable( symbolTable, scope );
@@ -105,18 +107,18 @@ decl			: VAR id_list MK_COLON scalar_type MK_SEMICOLON       /* scalar type decl
 			  // insert into symbol table
 			  struct idNode_sem *ptr;
 			  struct SymNode *newNode;
-			  for( ptr=$2 ; ptr!=0 ; ptr=(ptr->next) ) {
-			  	if( verifyRedeclaration( symbolTable, ptr->value, scope ) ==__FALSE ) { }
-				else {
-					newNode = createVarNode( ptr->value, scope, $4 );
-					insertTab( symbolTable, newNode );
+			  for (ptr=$2 ; ptr!=0; ptr=(ptr->next)) {
+			  	if( verifyRedeclaration(symbolTable, ptr->value, scope) == __TRUE ) {
+					newNode = createVarNode (ptr->value, scope, $4);
+					insertTab (symbolTable, newNode);
 				}
 			  }
-
+			  
 			  deleteIdList( $2 );
 			}
 			| VAR id_list MK_COLON array_type MK_SEMICOLON        /* array type declaration */
 			{
+			  verifyArrayType( $2, $4 );
 			  // insert into symbol table
 			  struct idNode_sem *ptr;
 			  struct SymNode *newNode;
@@ -128,7 +130,7 @@ decl			: VAR id_list MK_COLON scalar_type MK_SEMICOLON       /* scalar type decl
 					insertTab( symbolTable, newNode );
 				}
 			  }
-
+			  
 			  deleteIdList( $2 );
 			}
 			| VAR id_list MK_COLON literal_const MK_SEMICOLON     /* const declaration */
@@ -169,7 +171,7 @@ literal_const		: INT_CONST
 			  float tmp = -$2;
 			  $$ = createConstAttr( REAL_t, &tmp );
 			}
-			| SCIENTIFIC
+			| SCIENTIFIC 
 			{
 			  float tmp = $1;
 			  $$ = createConstAttr( REAL_t, &tmp );
@@ -211,13 +213,24 @@ func_decl		: ID MK_LPAREN opt_param_list
 			  MK_RPAREN opt_type 
 			{
 			  // check and insert function into symbol table
-			  insertFuncIntoSymTable( symbolTable, $1, $3, $6, scope );
+			  if( paramError == __TRUE ) {
+			  	printf("<Error> found in Line %d: param(s) with several error\n", linenum);
+			  } else if( $6->isArray == __TRUE ) {
+					
+					printf("<Error> found in Line %d: a function cannot return an array type\n", linenum);
+				} else {
+					
+				insertFuncIntoSymTable( symbolTable, $1, $3, $6, scope );
+			  }
 			  funcReturn = $6;
 			}
 			  MK_SEMICOLON
 			  compound_stmt
 			  END ID
 			{
+			  if( strcmp($1,$11) ) {
+				fprintf( stdout, "<Error> found in Line %d: the end of the functionName mismatch\n", linenum );
+			  }
 			  funcReturn = 0;
 			}
 			;
@@ -253,15 +266,16 @@ type			: scalar_type { $$ = $1; }
 			| array_type { $$ = $1; }
 			;
 
-scalar_type		: INTEGER { $$ = createPType( INTEGER_t ); }
-			| REAL { $$ = createPType( REAL_t ); }
-			| BOOLEAN { $$ = createPType( BOOLEAN_t ); }
-			| STRING { $$ = createPType( STRING_t ); }
+scalar_type		: INTEGER { $$ = createPType (INTEGER_t); }
+			| REAL { $$ = createPType (REAL_t); }
+			| BOOLEAN { $$ = createPType (BOOLEAN_t); }
+			| STRING { $$ = createPType (STRING_t); }
 			;
 
 array_type		: ARRAY array_index TO array_index OF type
 			{
-				increaseArrayDim( $6, $2, $4 );
+				verifyArrayDim ($6, $2, $4);
+				increaseArrayDim ($6, $2, $4);
 				$$ = $6;
 			}
 			;
@@ -305,14 +319,24 @@ stmt_list		: stmt_list stmt
 
 simple_stmt		: var_ref OP_ASSIGN boolean_expr MK_SEMICOLON
 			{
+			  // check if LHS exists
+			  __BOOLEAN flagLHS = verifyExistence( symbolTable, $1, scope, __TRUE );
+			  // id RHS is not dereferenced, check and deference
+			  __BOOLEAN flagRHS = __TRUE;
+			  if( $3->isDeref == __FALSE ) {
+				flagRHS = verifyExistence( symbolTable, $3, scope, __FALSE );
+			  }
+			  // if both LHS and RHS are exists, verify their type
+			  if( flagLHS==__TRUE && flagRHS==__TRUE )
+				verifyAssignmentTypeMatch( $1, $3 );
 			}
-			| PRINT boolean_expr MK_SEMICOLON
- 			| READ boolean_expr MK_SEMICOLON
+			| PRINT boolean_expr MK_SEMICOLON { verifyScalarExpr( $2, "print" ); }
+ 			| READ boolean_expr MK_SEMICOLON { verifyScalarExpr( $2, "read" ); }
 			;
 
 proc_call_stmt		: ID MK_LPAREN opt_boolean_expr_list MK_RPAREN MK_SEMICOLON
 			{
-			  //verifyFuncInvoke( $1, $3, symbolTable, scope );
+			  verifyFuncInvoke( $1, $3, symbolTable, scope );
 			}
 			;
 
@@ -324,7 +348,7 @@ cond_stmt		: IF condition THEN
 			| IF condition THEN opt_stmt_list END IF
 			;
 
-condition		: boolean_expr
+condition		: boolean_expr { verifyBooleanExpr( $1, "if" ); } 
 			;
 
 while_stmt		: WHILE condition_while DO
@@ -332,14 +356,17 @@ while_stmt		: WHILE condition_while DO
 			  END DO
 			;
 
-condition_while		: boolean_expr
+condition_while		: boolean_expr { verifyBooleanExpr( $1, "while" ); } 
 			;
 
-for_stmt		: FOR ID
-			{
+for_stmt		: FOR ID 
+			{ 
 			  insertLoopVarIntoTable( symbolTable, $2 );
 			}
 			  OP_ASSIGN loop_param TO loop_param
+			{
+			  verifyLoopParam( $5, $7 );
+			}
 			  DO
 			  opt_stmt_list
 			  END DO
@@ -353,6 +380,9 @@ loop_param		: INT_CONST { $$ = $1; }
 			;
 
 return_stmt		: RETURN boolean_expr MK_SEMICOLON
+			{
+			  verifyReturnStatement( $2, funcReturn );
+			}
 			;
 
 opt_boolean_expr_list	: boolean_expr_list { $$ = $1; }
@@ -374,6 +404,7 @@ boolean_expr_list	: boolean_expr_list MK_COMMA boolean_expr
 
 boolean_expr		: boolean_expr OP_OR boolean_term
 			{
+			  verifyAndOrOp( $1, OR_t, $3 );
 			  $$ = $1;
 			}
 			| boolean_term { $$ = $1; }
@@ -381,6 +412,7 @@ boolean_expr		: boolean_expr OP_OR boolean_term
 
 boolean_term		: boolean_term OP_AND boolean_factor
 			{
+			  verifyAndOrOp( $1, AND_t, $3 );
 			  $$ = $1;
 			}
 			| boolean_factor { $$ = $1; }
@@ -388,6 +420,7 @@ boolean_term		: boolean_term OP_AND boolean_factor
 
 boolean_factor		: OP_NOT boolean_factor 
 			{
+			  verifyUnaryNOT( $2 );
 			  $$ = $2;
 			}
 			| relop_expr { $$ = $1; }
@@ -395,6 +428,7 @@ boolean_factor		: OP_NOT boolean_factor
 
 relop_expr		: expr rel_op expr
 			{
+			  verifyRelOp( $1, $2, $3 );
 			  $$ = $1;
 			}
 			| expr { $$ = $1; }
@@ -410,6 +444,7 @@ rel_op			: OP_LT { $$ = LT_t; }
 
 expr			: expr add_op term
 			{
+			  verifyArithmeticOp( $1, $2, $3 );
 			  $$ = $1;
 			}
 			| term { $$ = $1; }
@@ -421,6 +456,12 @@ add_op			: OP_ADD { $$ = ADD_t; }
 
 term			: term mul_op factor
 			{
+			  if( $2 == MOD_t ) {
+				verifyModOp( $1, $3 );
+			  }
+			  else {
+				verifyArithmeticOp( $1, $2, $3 );
+			  }
 			  $$ = $1;
 			}
 			| factor { $$ = $1; }
@@ -433,11 +474,14 @@ mul_op			: OP_MUL { $$ = MUL_t; }
 
 factor			: var_ref
 			{
+			  verifyExistence( symbolTable, $1, scope, __FALSE );
 			  $$ = $1;
 			  $$->beginningOp = NONE_t;
 			}
 			| OP_SUB var_ref
 			{
+			  if( verifyExistence( symbolTable, $2, scope, __FALSE ) == __TRUE )
+				verifyUnaryMinus( $2 );
 			  $$ = $2;
 			  $$->beginningOp = SUB_t;
 			}
@@ -448,35 +492,18 @@ factor			: var_ref
 			}
 			| OP_SUB MK_LPAREN boolean_expr MK_RPAREN
 			{
+			  verifyUnaryMinus( $3 );
 			  $$ = $3;
 			  $$->beginningOp = SUB_t;
 			}
 			| ID MK_LPAREN opt_boolean_expr_list MK_RPAREN
 			{
-			  //$$ = verifyFuncInvoke( $1, $3, symbolTable, scope );
-			  $$ = (struct expr_sem *)malloc(sizeof(struct expr_sem));
-			  $$->isDeref = __TRUE;
-			  $$->varRef = 0;
-              $$->next = 0;
-
-              struct SymNode *node = 0;
-              node = lookupSymbol( symbolTable, $1, 0, __FALSE );
-
-              $$->pType = node->type;
+			  $$ = verifyFuncInvoke( $1, $3, symbolTable, scope );
 			  $$->beginningOp = NONE_t;
 			}
 			| OP_SUB ID MK_LPAREN opt_boolean_expr_list MK_RPAREN
 			{
-			  //$$ = verifyFuncInvoke( $2, $4, symbolTable, scope );
-			  $$ = (struct expr_sem *)malloc(sizeof(struct expr_sem));
-			  $$->isDeref = __TRUE;
-			  $$->varRef = 0;
-              $$->next = 0;
-
-              struct SymNode *node = 0;
-              node = lookupSymbol( symbolTable, $2, 0, __FALSE );
-
-              $$->pType = node->type;
+			  $$ = verifyFuncInvoke( $2, $4, symbolTable, scope );
 			  $$->beginningOp = SUB_t;
 			}
 			| literal_const
@@ -507,9 +534,9 @@ var_ref			: ID
 			;
 
 dim			: MK_LB boolean_expr MK_RB
-            {
-              $$ = INTEGER_t;
-            }
+			{
+			  $$ = verifyArrayIndex( $2 );
+			}
 			;
 
 %%
